@@ -60,6 +60,10 @@ Camila tem 27 anos, é engenheira de software com 3 anos de experiência, integr
 - Ao revisar o ADR gerado, Camila usa o comando "expanda as alternativas" na seção correspondente para detalhar melhor as opções que foram mencionadas de passagem na reunião, enriquecendo o documento antes de compartilhá-lo com o time.
 - Camila usa o histórico de ADRs da extensão como referência pessoal de aprendizado, revisitando decisões passadas para entender padrões arquiteturais adotados pelo time.
 
+### Restrições e Requisitos
+- Conformidade com LGPD: Como atua em um ambiente B2B (ou Sebrae), Rafael tem preocupação crítica com a privacidade dos dados das reuniões.
+- Processamento Local: O fator decisivo para ele autorizar o uso da ferramenta pelo time é a garantia de que a transcrição é processada localmente, sem envio de dados sensíveis para servidores externos de terceiros.
+
 ---
 
 ## Persona 3: Bruno, o Engineering Manager
@@ -73,9 +77,14 @@ Bruno tem 40 anos e gerencia dois times de desenvolvimento em uma empresa de mé
 ### 3. Objetivos e Ganhos Esperados
 - **Objetivo:** Garantir que os dois times documentem decisões arquiteturais de forma consistente e sem depender de cobrança manual.
 - **Objetivo:** Ter visibilidade sobre quais decisões técnicas relevantes foram tomadas recentemente, sem precisar participar de todas as reuniões.
+- **Objetivo** Contribuir ativamente para a documentação técnica do time, sem depender exclusivamente do Tech Lead.
+- **Objetivo** Aprender a estruturar melhor o raciocínio arquitetural através dos ADRs gerados.
 - **Ganho:** Reduzir o risco de perda de conhecimento quando engenheiros saem do time.
 - **Ganho:** Facilitar auditorias técnicas e revisões de arquitetura com histórico documentado e acessível.
 - **Ganho:** Promover uma cultura de documentação sem adicionar reuniões ou processos burocráticos.
+- **Ganho:** Segurança para documentar, pois a IA funciona como um "quebra-gelo", eliminando o bloqueio da página em branco com o primeiro rascunho.
+- **Ganho:** Redução da carga de trabalho sobre o Rafael, criando um ciclo positivo de colaboração onde a documentação flui naturalmente por todo o time.
+- **Ganho:** Sentir que suas contribuições em reuniões ficam registradas e valorizadas formalmente.
 
 ### 4. Problemas/Dores Atuais
 - Os times têm boa intenção de documentar, mas a execução é inconsistente — alguns sprints há ADRs, outros não há nenhum.
@@ -88,3 +97,6 @@ Bruno tem 40 anos e gerencia dois times de desenvolvimento em uma empresa de mé
 - Bruno incentiva os Tech Leads dos dois times a adotarem a extensão. Após 2 semanas, percebe que o número de ADRs commitados no repositório aumentou sem que ele precisasse cobrar — a ferramenta removeu a fricção de documentar.
 - Antes de uma reunião de revisão de arquitetura trimestral, Bruno pede a um Tech Lead que exporte os ADRs gerados no último mês. Com o histórico em mãos, a reunião foca em análise e direcionamento estratégico, não em reconstrução do passado.
 - Durante o onboarding de um novo engenheiro sênior, Bruno indica o histórico de ADRs da extensão como primeira leitura para entender as principais decisões técnicas do produto — reduzindo em dias o tempo para o novo membro atingir produtividade.
+- Durante reuniões de acompanhamento (1:1s ou Syncs), Bruno utiliza o histórico local da extensão para extrair indicadores rápidos de produtividade, como o volume de decisões arquiteturais tomadas no último mês ("Quantas decisões tomamos este mês?").
+- Bruno incentiva os Tech Leads a adotarem a extensão e percebe, após 2 semanas, o aumento de ADRs commitados sem necessidade de cobrança direta.
+- Bruno indica o histórico de ADRs para novos engenheiros sêniores como leitura obrigatória ou opcional para entender o contexto das principais escolhas técnicas do produto.
