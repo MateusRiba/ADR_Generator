@@ -7,6 +7,25 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-05-27] ingest | Documentação completa da fase de Composição (3 canvases)
+
+Criados os três artefatos prescritos pela fase **Composição** do Sinfonia, completando-a (3/3 ✅). Templates oficiais consultados: `Solution_Ideation_Model_Canvas_Template.md`, `Prompt_Design_Record_Model_Canvas_Template.md`, `Experiment_Design_Model_Canvas_Template.md`.
+
+**`docs/02_composicao/canvas_ideacao_solucao.md`** — partindo do problema definido na fase de Exposição, foram brainstormadas 7 ideias de solução (A–G), posicionadas em matriz de **impacto × esforço**, e a ideia vencedora foi formalizada: **Extensão Chrome Manifest V3 + Gemini API + zero backend + persistência local**, complementada por refinamento por seção. Inclui critérios de avaliação e justificativa do veredito.
+
+**`docs/02_composicao/prompt_design_record.md`** — registro de engenharia de prompt em 7 seções (metadados, estrutura, resposta, testes/qualidade, notas, histórico de versões, próximos passos). Documenta a versão **v2.0** em produção (Role Prompting + Chain-of-Thought via campo `analise_passo_a_passo` + Few-Shot + `responseSchema` forçado, `temperature: 0`, modelo `gemini-3-flash-preview`) e a **v1.0** descartada (zero-shot baseline com alucinação elevada). Inclui critérios de aceitação tabulados, parâmetros da API justificados e riscos conhecidos com mitigações. **Substitui e amplia** o `catalogo_de_prompts.md` antes na raiz do projeto.
+
+**`docs/02_composicao/canvas_design_experimentos.md`** — formaliza o experimento já executado (transcrição real de ~35K caracteres sobre Microsoft Garnet vs Redis para o Engage Kiosk do Sebrae PE) seguindo o formato Sinfonia (hipótese, desenho, métricas, critérios pivotar/perseverar, resultado). Hipótese **validada** — todos os critérios atendidos. Inclui ainda 3 experimentos pendentes desenhados para a fase de Ensaio (ausência de decisão, captura via Web Speech API ponta-a-ponta, refinamento por seção). **Substitui e amplia** o `canvas_de_experimento.md` antes na raiz do projeto.
+
+**Removidos da raiz do projeto:**
+- `catalogo_de_prompts.md` — material legado de outros integrantes, conteúdo integrado e expandido no `prompt_design_record.md`.
+- `canvas_de_experimento.md` — material legado de outros integrantes, conteúdo integrado e expandido no `canvas_design_experimentos.md`.
+
+**Removido:**
+- `docs/02_composicao/README.md` (placeholder) — substituído pelos próprios artefatos da fase, seguindo a mesma convenção de `01_exposicao/` (sem README intermediário).
+
+**Justificativa:** com a fase de Exposição já completa e a PoC do backend validada, era hora de formalizar **o quê** estamos construindo (Ideação), **como** o componente de IA é montado (Prompt Design Record) e **como provamos** que funciona (Design de Experimentos). Sem esses artefatos, a transição para a fase de Ensaio seria feita sem fundamentação documentada, perdendo rastreabilidade do racional de design. Adicionalmente, materiais soltos na raiz (`catalogo_de_prompts.md`, `canvas_de_experimento.md`) feriam o princípio de organização por fase e duplicavam informação — foram incorporados aos canvases oficiais e excluídos.
+
 ## [2026-05-27] ingest | Canvas de Identificação do Domínio e Canvas de Mapeamento de Fontes de Dados (fase Exposição)
 
 Criados os dois artefatos restantes da fase **Exposição** seguindo os templates oficiais do Sinfonia (`templates/Domain_Identification_Model_Canvas_Template.md` e `templates/Data_Source_Mapping_Model_Canvas_Template.md`).

@@ -19,9 +19,9 @@ Ideação da solução, design de prompts e desenho de experimentos.
 
 | Artefato | Status |
 |---|---|
-| Canvas de Ideação da Solução | ⬜ |
-| Prompt Design Record | ⬜ |
-| Canvas de Design de Experimentos | ⬜ |
+| [Canvas de Ideação da Solução](./02_composicao/canvas_ideacao_solucao.md) | ✅ |
+| [Prompt Design Record](./02_composicao/prompt_design_record.md) | ✅ |
+| [Canvas de Design de Experimentos](./02_composicao/canvas_design_experimentos.md) | ✅ |
 
 ### [03 — Ensaio](./03_ensaio/) (Build & Test)
 Arquitetura técnica (C4), estratégia de inteligência, análise de riscos, validação e checklist de lançamento.
@@ -47,7 +47,7 @@ Métricas de impacto, planejamento de escalabilidade e painel de feedback.
 
 ## Estado Atual
 
-O projeto encontra-se na fase de **Exposição** (01). Os quatro artefatos previstos para esta fase estão preenchidos. Os artefatos das fases seguintes serão produzidos conforme o projeto avançar.
+O projeto concluiu as fases de **Exposição** (01) e **Composição** (02), com todos os artefatos prescritos pelo Sinfonia para essas fases preenchidos. Próximo passo: fase de **Ensaio** (03 — Build & Test).
 
 ## Log de Alimentação da Documentação
 
