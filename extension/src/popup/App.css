@@ -38,3 +38,34 @@ body {
   line-height: 1.4;
   opacity: 0.8;
 }
+
+.popup__button {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.popup__button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.popup__status {
+  margin: 0;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  word-break: break-all;
+}
+
+.popup__status--ok {
+  color: #2e7d32;
+}
+
+.popup__status--error {
+  color: #c62828;
+}

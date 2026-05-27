@@ -7,6 +7,25 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-05-27] feature | Protocolo de mensagens tipado SW↔popup (Etapa 2/12 do roadmap)
+
+Implementada a Etapa 2 do roadmap: contrato tipado de `chrome.runtime` entre service worker e popup, validado por um ping-pong end-to-end.
+
+**Arquivos criados:**
+- `extension/src/shared/types/messages.ts` — union discriminada `RuntimeMessage` com `PING` e `PONG` (campo `receivedAt: string`). Tipos das etapas seguintes (`START_CAPTURE`, `TRANSCRIPT_CHUNK`, `GENERATE_ADR`, `ADR_READY`, `REFINE_SECTION`, `ERROR`) ficam comentados como TODO para serem ativados quando a etapa correspondente chegar — evita declarar protocolo morto agora.
+- `extension/src/shared/runtime/messaging.ts` — `sendMessage<T extends RuntimeMessage>(msg): Promise<RuntimeMessage>` e `onMessage(handler)`. Inclui guard `isRuntimeMessage` que rejeita payloads sem `type` (defesa contra mensagens de outras extensões) e suporta handlers síncronos e assíncronos (retorna `true` quando o resultado é Promise, conforme contrato do MV3).
+
+**Arquivos editados:**
+- `extension/src/background/service_worker.ts` — handler `onMessage` com `switch (msg.type)` exaustivo. `PING` → log `[SW] PING received` + retorna `{ type: "PONG", receivedAt }`. `PONG` no SW retorna `void` (não esperado, mas TS exige exaustividade).
+- `extension/src/popup/App.tsx` — botão "Ping SW" com estados `pinging`/`pongAt`/`error`. Trata resposta inesperada e exceção do `sendMessage`.
+- `extension/src/popup/App.css` — estilos `.popup__button` e `.popup__status` (verde/vermelho mono).
+
+**Validações:**
+- `npm run build` (= `tsc --noEmit && vite build`): passou. Vite gerou `messaging-*.js` em chunk separado (~0.5 KB), compartilhado entre SW e popup.
+- Teste manual no Chrome: clique no botão → `Pong recebido em <ISO>` no popup; DevTools do SW mostra `[SW] PING received`.
+
+**Justificativa:** discriminated union pelo campo `type` é o padrão idiomático para protocolos de mensagens em TS — força `switch` exaustivo e impede typos silenciosos quando um novo tipo é adicionado. O guard `isRuntimeMessage` no `onMessage` é a fronteira de validação entre o mundo "qualquer mensagem do navegador" e o mundo tipado da app; sem ele, mensagens de outras extensões ou de scripts injetados quebrariam o `switch`. Não foi adicionada nenhuma permissão ao manifest porque `chrome.runtime` está disponível por padrão — respeita o princípio de menor privilégio decidido no `canvas_c4_model.md`.
+
 ## [2026-05-27] feature | Roadmap de implementação das 12 etapas em docs/roadmap_implementacao.md
 
 Criado `docs/roadmap_implementacao.md` como plano-mestre versionado do desenvolvimento da extensão. Documenta as **12 etapas** sequenciais, cada uma com objetivo, tarefas concretas, critério de pronto testável manualmente, arquivos chave e mapeamento explícito para os riscos críticos do `checklist_analise_riscos_ia.md` (P1, P2, S1, T1, P3, F1, S6) e casos de teste do `canvas_testes_validacao.md`.

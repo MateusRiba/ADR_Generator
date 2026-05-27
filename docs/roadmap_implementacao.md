@@ -2,7 +2,7 @@
 
 Este documento é o plano-mestre de implementação da extensão (após as fases de Exposição e Composição do Sinfonia). Está dividido em **12 etapas independentes**, cada uma terminando com uma saída testável manualmente. Cada etapa equivale a uma sessão de desenvolvimento.
 
-**Status atual:** Etapa 1 concluída em 2026-05-27. Próxima sessão começa pela Etapa 2.
+**Status atual:** Etapas 1 e 2 concluídas em 2026-05-27. Próxima sessão começa pela Etapa 3.
 
 ## Stack Decidida (vale para todas as etapas)
 
@@ -41,7 +41,7 @@ Este documento é o plano-mestre de implementação da extensão (após as fases
 | # | Etapa | Saída testável | Status |
 |---|---|---|---|
 | 1 | Fundação: Vite + crxjs + manifest + scaffold | Extensão carrega, popup React abre, SW loga "booted" | ✅ Concluída 2026-05-27 |
-| 2 | Tipos de mensagens + ping SW↔popup | Popup envia `PING`, SW responde `PONG`, tipos compartilhados | ⬜ |
+| 2 | Tipos de mensagens + ping SW↔popup | Popup envia `PING`, SW responde `PONG`, tipos compartilhados | ✅ Concluída 2026-05-27 |
 | 3 | Options Page + API key em `storage.session` | Usuário cola chave Gemini; UI indica se está configurada | ⬜ |
 | 4 | Porta de `indexAllShot.js` → `shared/gemini/` | Teste manual: transcrição fixa → JSON com 8 campos válido | ⬜ |
 | 5 | Storage Repository (IndexedDB) + Markdown Formatter | ADR persiste e exporta `.md` formato Nygard | ⬜ |
