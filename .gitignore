@@ -1,5 +1,9 @@
 .claude/settings.local.json
+
+# Env
 .env
+.env.local
+.env.*.local
 
 # Node
 node_modules/
@@ -8,6 +12,18 @@ node_modules/
 extension/dist/
 extension/.vite/
 
+# TypeScript incremental build cache
+*.tsbuildinfo
+
 # Logs
 *.log
 npm-debug.log*
+
+# Session transcripts (dumps locais de conversas com Claude Code)
+session.md
+session-*.md
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
