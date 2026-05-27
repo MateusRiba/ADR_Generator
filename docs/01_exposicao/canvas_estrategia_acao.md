@@ -89,22 +89,6 @@ O projeto visa eliminar a fricção na documentação de decisões técnicas, in
 
 O projeto está inserido no domínio de **Engenharia de Software**, com foco específico em **Gestão de Conhecimento e Documentação de Arquitetura**. O objetivo é mitigar a perda de contexto técnico que ocorre entre as discussões em reuniões síncronas e o registro formal de decisões.
 
-### 8.1 Canvas de Identificação do Domínio
-
-| Campo | Detalhamento Técnico |
-| :--- | :--- |
-| **Domínio Principal** | Engenharia de Software e Documentação de Arquitetura. |
-| **Subdomínios** | Inteligência Artificial Generativa (LLMs), Processamento de Linguagem Natural (NLP) e Ferramentas de Produtividade. |
-| **Problema Central** | Fricção manual e perda de informação entre reuniões no Google Meet e a escrita formal de ADRs. |
-| **Entidades Chave** | ADR (Padrão Michael Nygard), Transcrição de Áudio, Prompt, Markdown e Repositório Git. |
-| **Atores (Stakeholders)** | Tech Leads (Rafael), Engenheiros de Software (Camila) e Engineering Managers (Bruno). |
-| **Limites (Boundaries)** | A solução abrange desde a captura do áudio no navegador até a geração do Markdown; o deploy automatizado no Git é externo ao MVP. |
-
-### 8.2 Mapeamento de Fontes de Dados
-
-O fluxo de dados do **ADR Generator** foi projetado para garantir a integridade da informação e a privacidade do usuário:
-
-1.  **Entrada Primária (Input):** Captura de áudio e legendas em tempo real diretamente da interface do Google Meet através da Web Speech API.
-2.  **Processamento (Data Pipeline):** A transcrição bruta é enviada como contexto para a API do Google Gemini, utilizando um prompt estruturado para extração de entidades arquiteturais.
-3.  **Saída Estruturada (Output):** Recebimento de um objeto JSON validado pelo esquema técnico, que é então convertido em um arquivo Markdown (.md) pronto para versionamento.
-4.  **Persistência:** Todo o histórico de reuniões e documentos gerados é armazenado localmente no navegador (LocalStorage/IndexedDB), respeitando normas de privacidade e LGPD.
+> Para detalhamento do domínio e do fluxo de dados, consulte os documentos dedicados da fase de Exposição:
+> - [`canvas_identificacao_dominio.md`](./canvas_identificacao_dominio.md)
+> - [`canvas_mapeamento_fontes_dados.md`](./canvas_mapeamento_fontes_dados.md)
