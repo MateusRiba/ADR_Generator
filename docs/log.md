@@ -7,6 +7,16 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-05-27] ingest | Checklist de Análise de Riscos de IA e Canvas de Testes e Validação (fase Ensaio, 3/5)
+
+Criados dois novos artefatos da fase **Ensaio** seguindo os templates oficiais do Sinfonia (`AI_Risk_Analysis_and_Defensibility_Checklist.md` e `Testing_and_Validation_Model_Canvas_Template.md`). Conduzidos como etapas separadas: primeiro o checklist de riscos, depois o canvas de testes, para que os IDs de mitigação do primeiro pudessem ser referenciados pelos casos de teste do segundo.
+
+**`docs/03_ensaio/checklist_analise_riscos_ia.md`** — preenche as 6 seções do template (Justiça e Viés, Privacidade e Dados, Segurança e Robustez, Transparência e Explicabilidade, Matriz de Priorização, Plano de Mitigação). Mapeia **19 riscos** classificados por Impacto × Probabilidade e detalha **plano de mitigação para os 7 críticos**: P1 (PII sem consentimento), P2 (vazamento via Gemini), S1 (prompt injection), T1 (confusão IA × decisão), P3 (retenção de transcrições brutas), F1 (viés de sotaque) e S6 (perda do Service Worker MV3). Cada mitigação tem responsável e caso de teste de verificação correspondente.
+
+**`docs/03_ensaio/canvas_testes_validacao.md`** — preenche as 10 seções do template (Objetivo, Tipos, Casos, Critérios, Ferramentas, Equipe, Resultados, Reteste, Monitoramento, Feedback). Documenta **8 categorias de teste** (FUNC, IA, SEG, PRIV, UX, ROB, PERF, COMPAT) com **41 casos de teste tabulados** (entrada, ação, resultado esperado), critérios Go/No-Go binários para LGPD/segurança e ≥90% para IA, e política de monitoramento *local-first* (zero telemetria para servidores próprios — coerente com a decisão arquitetural de zero backend). Os 7 riscos críticos do checklist têm caso de teste correspondente: `T-UX-02` (P1), `T-FUNC-08` (P2), `T-SEG-01` (S1), `T-FUNC-06` (T1), `T-PRIV-01` (P3), `T-FUNC-07` (F1), `T-ROB-02` (S6). Os 3 experimentos pendentes do `canvas_design_experimentos.md` viram casos de teste: `T-FUNC-05` (ausência de decisão), conjunto FUNC+ROB+UX (captura ponta-a-ponta), `T-FUNC-03` (refinamento por seção).
+
+**Justificativa:** com o C4 estabelecido, a fase de Ensaio precisa ancorar o **lado de defensabilidade** do produto — sem o checklist de riscos, decisões críticas como "transcrição apaga após geração" ficariam implícitas no código sem registro de *por que* foram tomadas; e sem o canvas de testes, a verificação dessas decisões seria informal. Manter os dois artefatos referenciados entre si (riscos → casos de teste pelos IDs `T-*`) cria rastreabilidade auditável: para qualquer decisão de produto há um risco identificado, uma mitigação proposta e um teste que verifica a mitigação. Restam dois artefatos para concluir a fase: Intelligence Strategy Record (aprofunda o `Gemini API Client` + `Prompt Manager` do C4) e Checklist de Lançamento.
+
 ## [2026-05-27] ingest | Modelo C4 da arquitetura técnica (fase Ensaio, 1/5)
 
 Criado o primeiro artefato da fase **Ensaio**: `docs/03_ensaio/canvas_c4_model.md`, seguindo o template oficial `C4_Model_Canvas_Template.md` do Sinfonia (3 níveis: Contexto, Contêiner, Componente, cada um com Título / Elementos / Legenda).

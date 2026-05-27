@@ -30,8 +30,8 @@ Arquitetura técnica (C4), estratégia de inteligência, análise de riscos, val
 |---|---|
 | [Modelo C4 (Contexto, Contêineres, Componentes)](./03_ensaio/canvas_c4_model.md) | ✅ |
 | Intelligence Strategy Record | ⬜ |
-| Checklist de Análise de Riscos de IA e Defensibilidade | ⬜ |
-| Canvas de Testes e Validação | ⬜ |
+| [Checklist de Análise de Riscos de IA e Defensibilidade](./03_ensaio/checklist_analise_riscos_ia.md) | ✅ |
+| [Canvas de Testes e Validação](./03_ensaio/canvas_testes_validacao.md) | ✅ |
 | Checklist de Lançamento | ⬜ |
 
 ### [04 — Ressonância](./04_ressonancia/) (Measure & Learn)
@@ -47,7 +47,7 @@ Métricas de impacto, planejamento de escalabilidade e painel de feedback.
 
 ## Estado Atual
 
-O projeto concluiu as fases de **Exposição** (01) e **Composição** (02), com todos os artefatos prescritos pelo Sinfonia para essas fases preenchidos, e iniciou a fase de **Ensaio** (03 — Build & Test) com o Modelo C4 da arquitetura técnica. Próximos artefatos do Ensaio: Intelligence Strategy Record, Análise de Riscos de IA, Testes e Validação, Checklist de Lançamento.
+O projeto concluiu as fases de **Exposição** (01) e **Composição** (02), com todos os artefatos prescritos pelo Sinfonia para essas fases preenchidos, e tem 3 de 5 artefatos da fase de **Ensaio** (03 — Build & Test) prontos: Modelo C4, Checklist de Análise de Riscos de IA e Defensibilidade, e Canvas de Testes e Validação. Próximos artefatos do Ensaio: Intelligence Strategy Record e Checklist de Lançamento.
 
 ## Log de Alimentação da Documentação
 
