@@ -7,6 +7,23 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-05-27] ingest | Modelo C4 da arquitetura técnica (fase Ensaio, 1/5)
+
+Criado o primeiro artefato da fase **Ensaio**: `docs/03_ensaio/canvas_c4_model.md`, seguindo o template oficial `C4_Model_Canvas_Template.md` do Sinfonia (3 níveis: Contexto, Contêiner, Componente, cada um com Título / Elementos / Legenda).
+
+**Conteúdo:**
+- **Nível 1 — Contexto:** 3 atores (Rafael, Camila, Bruno), sistema principal (extensão Chrome MV3) e 5 sistemas externos (Google Meet, Web Speech API, Google Gemini API, Armazenamento Local, GitHub). Destaca que a Gemini API é o **único ponto de tráfego externo** — fato crítico para os artefatos de Análise de Riscos e Intelligence Strategy Record.
+- **Nível 2 — Contêineres:** 4 contêineres (Content Script, Popup/Sidebar UI, Background Service Worker MV3, Banco de Dados Local IndexedDB) com tecnologia, responsabilidade e interações via `chrome.runtime.sendMessage`.
+- **Nível 3 — Componentes:** 11 componentes internos divididos entre Background Service Worker (8 — Meeting Controller, Transcription Orchestrator, Prompt Manager, Gemini API Client, Data Parser/Validator, Refinement Engine, Storage Repository, Markdown Formatter) e UI (3 — Capture View, ADR Editor View, History View), com fluxo ponta-a-ponta de geração de ADR descrito em 10 passos.
+- Inclui **diagramas Mermaid** para cada nível e uma seção de **Decisões Arquiteturais Implícitas** que adianta material para o Intelligence Strategy Record.
+
+**Substitui e amplia** `c4_model.md` (na raiz do projeto, material legado de outros integrantes): preserva a decomposição original em 3 níveis e o conjunto de componentes propostos, mas reformata para o template Sinfonia, adiciona `Refinement Engine` (suporte à Ideia G do canvas de ideação), separa `Markdown Formatter` como componente próprio, formaliza a `UI` em 3 views (Capture/Editor/History) e adiciona diagramas Mermaid, legendas e referências cruzadas para todos os artefatos das fases anteriores.
+
+**Removido:**
+- `c4_model.md` (raiz do projeto) — conteúdo integrado e expandido em `docs/03_ensaio/canvas_c4_model.md`.
+
+**Justificativa:** com a fase de Composição concluída e o pipeline central validado, o C4 é o ponto natural de entrada da fase de Ensaio — ele estabelece o vocabulário arquitetural (contêineres, componentes) sobre o qual os próximos artefatos vão se apoiar: a Análise de Riscos de IA precisa enumerar pontos de tráfego e persistência (Nível 1/2); o Intelligence Strategy Record vai se aprofundar no `Gemini API Client` e no `Prompt Manager` (Nível 3); o Canvas de Testes e Validação vai mapear suítes por contêiner/componente. Materializar o C4 cedo evita inconsistências de nomenclatura nos artefatos seguintes.
+
 ## [2026-05-27] ingest | Documentação completa da fase de Composição (3 canvases)
 
 Criados os três artefatos prescritos pela fase **Composição** do Sinfonia, completando-a (3/3 ✅). Templates oficiais consultados: `Solution_Ideation_Model_Canvas_Template.md`, `Prompt_Design_Record_Model_Canvas_Template.md`, `Experiment_Design_Model_Canvas_Template.md`.

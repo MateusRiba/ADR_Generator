@@ -28,7 +28,7 @@ Arquitetura técnica (C4), estratégia de inteligência, análise de riscos, val
 
 | Artefato | Status |
 |---|---|
-| Templates do Modelo C4 | ⬜ |
+| [Modelo C4 (Contexto, Contêineres, Componentes)](./03_ensaio/canvas_c4_model.md) | ✅ |
 | Intelligence Strategy Record | ⬜ |
 | Checklist de Análise de Riscos de IA e Defensibilidade | ⬜ |
 | Canvas de Testes e Validação | ⬜ |
@@ -47,7 +47,7 @@ Métricas de impacto, planejamento de escalabilidade e painel de feedback.
 
 ## Estado Atual
 
-O projeto concluiu as fases de **Exposição** (01) e **Composição** (02), com todos os artefatos prescritos pelo Sinfonia para essas fases preenchidos. Próximo passo: fase de **Ensaio** (03 — Build & Test).
+O projeto concluiu as fases de **Exposição** (01) e **Composição** (02), com todos os artefatos prescritos pelo Sinfonia para essas fases preenchidos, e iniciou a fase de **Ensaio** (03 — Build & Test) com o Modelo C4 da arquitetura técnica. Próximos artefatos do Ensaio: Intelligence Strategy Record, Análise de Riscos de IA, Testes e Validação, Checklist de Lançamento.
 
 ## Log de Alimentação da Documentação
 
