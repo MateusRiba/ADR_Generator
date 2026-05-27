@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "ADR Generator",
+  "version": "0.0.1",
+  "description": "Captura transcrição do Google Meet e gera Architecture Decision Records via Gemini API.",
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "ADR Generator"
+  },
+  "background": {
+    "service_worker": "src/background/service_worker.ts",
+    "type": "module"
+  }
+}

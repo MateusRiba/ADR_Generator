@@ -7,6 +7,48 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-05-27] feature | Roadmap de implementação das 12 etapas em docs/roadmap_implementacao.md
+
+Criado `docs/roadmap_implementacao.md` como plano-mestre versionado do desenvolvimento da extensão. Documenta as **12 etapas** sequenciais, cada uma com objetivo, tarefas concretas, critério de pronto testável manualmente, arquivos chave e mapeamento explícito para os riscos críticos do `checklist_analise_riscos_ia.md` (P1, P2, S1, T1, P3, F1, S6) e casos de teste do `canvas_testes_validacao.md`.
+
+**Inclui:**
+- Tabela das 12 etapas com status (Etapa 1 ✅ marcada como concluída).
+- Stack confirmada (Vite 5.4 + `@crxjs/vite-plugin` 2.0-beta + React 18.3 + TS 5.6).
+- Decisões transversais já tomadas (zero backend, menor privilégio no manifest, estrutura de pastas, config crítica do `vite.config.ts` resolvendo o bug IPv6 + CORS no Windows).
+- Detalhamento expandido das Etapas 2–12: tarefas atômicas, saídas testáveis, decisões pendentes a tomar dentro da etapa, e instrução de como uma próxima sessão do Claude Code deve continuar.
+
+**Atualizações em `CLAUDE.md`:**
+- Estado atual: "PoC backend validado" → "Etapa 1/12 da extensão concluída".
+- Estrutura de diretório: adicionado `extension/` e referência a `roadmap_implementacao.md`.
+- Seção Stack: substituído o item "Extensão (planejado)" por versões reais já adotadas.
+- Adicionada seção "Rodando a extensão (dev)".
+- Seção "Onde Buscar Conhecimento": novo bullet apontando para `docs/roadmap_implementacao.md` como leitura obrigatória antes de codar.
+
+**Justificativa:** o plano original ficou em `~/.claude/plans/tidy-inventing-comet.md` — efêmero, fora do controle de versão e invisível para colaboradores/sessões futuras. Versionar dentro de `docs/` torna o roadmap auditável (cada mudança vira commit) e descobrível (próxima sessão do Claude Code lê o `CLAUDE.md`, segue o link, e sabe exatamente onde parou e o que vem). Estrutura por etapa-atômica (em vez de "PR gigante") respeita o pedido do usuário por foco total em uma sessão de cada vez.
+
+## [2026-05-27] feature | Scaffold da extensão Chrome MV3 (Etapa 1/12 do roadmap de implementação)
+
+Criado o diretório `extension/` (irmão de `backend/`), inicializando o código produtivo do projeto após a conclusão das fases de Exposição (4/4), Composição (3/3) e 3/5 do Ensaio. Esta é a **Etapa 1 (Fundação)** de um roadmap de 12 etapas — o objetivo é apenas carregar uma extensão MV3 vazia no Chrome, sem nenhuma feature de negócio.
+
+**Stack adotada:**
+- **TypeScript** — para tipar o protocolo de mensagens `chrome.runtime` entre os 4 contêineres do C4 (`canvas_c4_model.md`). É onde extensões MV3 mais falham em silêncio.
+- **Vite 5.4 + `@crxjs/vite-plugin` 2.0-beta** — único combo que processa `manifest.json` para MV3 corretamente (entry points separados para SW, content script, popup) e oferece HMR no popup.
+- **React 18.3** — apenas no popup/options/sidebar (3 views previstas no C4: Capture, ADR Editor com 8 campos, History). **Service Worker e Content Scripts continuam TS puro**, sem React.
+- **`@types/chrome`** — força autocomplete e erro de compilação para APIs MV3 não existentes.
+
+**Decisão de segurança sobre API key do Gemini:** será armazenada em `chrome.storage.session` (memória, some quando o Chrome fecha) em vez de `chrome.storage.local` (plain text em disco). UX: usuário re-cola a chave 1x por sessão do Chrome. Tradeoff aceito porque a extensão é usada pontualmente ao fim de reuniões, não dezenas de vezes/dia. Alternativas avaliadas e descartadas: `storage.sync` (vai pro Google sync, pior), OAuth/Vertex AI (exige provisionamento GCP pelo usuário, fora do MVP), AES-GCM com senha mestre (adicionaria meia etapa só para criar a UX de senha — fica como evolução pós-MVP).
+
+**Estrutura criada:**
+- `extension/package.json`, `tsconfig.json`, `vite.config.ts`
+- `extension/src/manifest.json` — Manifest V3 mínimo, **sem permissões adicionais** (princípio do menor privilégio — `host_permissions`, `tabCapture`, `storage` entram apenas nas etapas que os exigirem)
+- `extension/src/background/service_worker.ts` — só `console.log` de boot
+- `extension/src/popup/{index.html, main.tsx, App.tsx, App.css}` — popup React exibindo nome e versão lidos via `chrome.runtime.getManifest()`
+- `.gitignore` atualizado para ignorar `extension/node_modules/`, `extension/dist/` e `extension/.vite/`
+
+**Ícones omitidos do manifest:** `icons` e `action.default_icon` são opcionais em MV3 — Chrome usa um genérico. Adicionar ícones definitivos fica para a etapa de UI/branding, evitando trabalho descartável agora.
+
+**Justificativa:** após semanas de documentação (Exposição → Composição → 3/5 Ensaio), o projeto precisava ter código rodando para validar que os contêineres do C4 são exequíveis dentro das restrições reais do MV3 (service worker efêmero, CSP estrita, sem `eval`, sem inline scripts). Começar pela Fundação — extensão carregando vazia — em vez de pular para o pipeline completo dá base sólida para as próximas 11 etapas, cada uma terminando com uma saída testável manualmente. As próximas etapas estão documentadas no plano `~/.claude/plans/tidy-inventing-comet.md`.
+
 ## [2026-05-27] ingest | Checklist de Análise de Riscos de IA e Canvas de Testes e Validação (fase Ensaio, 3/5)
 
 Criados dois novos artefatos da fase **Ensaio** seguindo os templates oficiais do Sinfonia (`AI_Risk_Analysis_and_Defensibility_Checklist.md` e `Testing_and_Validation_Model_Canvas_Template.md`). Conduzidos como etapas separadas: primeiro o checklist de riscos, depois o canvas de testes, para que os IDs de mitigação do primeiro pudessem ser referenciados pelos casos de teste do segundo.

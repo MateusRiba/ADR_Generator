@@ -6,7 +6,7 @@ Guia para Claude Code (claude.ai/code) trabalhar neste repositório.
 
 **ADR Generator** — extensão Chrome (Manifest V3) que captura transcrição de reuniões no Google Meet e gera Architecture Decision Records (ADRs) estruturados via Google Gemini API. MVP zero-backend, armazenamento local no navegador, processamento aderente a LGPD.
 
-Estado atual: **PoC backend validado** (chamadas Gemini com schema forçado). Código da extensão Chrome ainda não foi escrito.
+Estado atual: **Etapa 1/12 da extensão concluída** (scaffold MV3 com Vite + crxjs + React + TS carregando no Chrome). PoC backend (`backend/indexAllShot.js`) continua como referência canônica do prompt e schema do Gemini. Roadmap completo das 12 etapas em [`docs/roadmap_implementacao.md`](./docs/roadmap_implementacao.md).
 
 ## Estrutura do Diretório
 
@@ -19,12 +19,21 @@ ADR_Generator/
 │   ├── indexAllShot.js        ← CoT + few-shot (estratégia preferida)
 │   ├── archives/              ← transcrições de teste
 │   └── package.json
+├── extension/                 ← extensão Chrome MV3 (Vite + crxjs + React + TS)
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   └── src/
+│       ├── manifest.json
+│       ├── background/        ← service worker (TS puro, sem React)
+│       └── popup/             ← UI React (Capture / Editor / History)
 └── docs/                      ← base de documentação (metodologia Sinfonia)
     ├── README.md              ← índice das 4 fases
     ├── log.md                 ← registro temporal append-only
-    ├── 01_exposicao/          ← canvases da fase atual
-    ├── 02_composicao/
-    ├── 03_ensaio/
+    ├── roadmap_implementacao.md  ← plano-mestre das 12 etapas
+    ├── 01_exposicao/          ← canvases preenchidos
+    ├── 02_composicao/         ← canvases preenchidos
+    ├── 03_ensaio/             ← 3 de 5 artefatos preenchidos
     └── 04_ressonancia/
 ```
 
@@ -33,11 +42,11 @@ ADR_Generator/
 - **Linguagem (PoC):** Node.js (ESM, `"type": "module"`)
 - **LLM:** Google Gemini via `@google/generative-ai` (^0.11.5), modelo `gemini-3-flash-preview`, `temperature: 0`, `responseMimeType: "application/json"` + `responseSchema`
 - **Env:** `dotenv` (^16.6.1), arquivo `backend/.env` com `GEMINI_API_KEY`
-- **Extensão (planejado):** Manifest V3, Web Speech API (captura), `chrome.storage.local` / IndexedDB (persistência), service worker (chamadas API)
+- **Extensão (em construção):** Manifest V3, Vite 5.4 + `@crxjs/vite-plugin` 2.0-beta, React 18.3 (só popup/options), TypeScript 5.6, Web Speech API (captura — Etapa 6), `chrome.storage.session` (API key — Etapa 3) + IndexedDB (ADRs — Etapa 5), Gemini via `fetch` direto no service worker (Etapa 4)
 - **Padrão de ADR:** Michael Nygard (campos: `titulo`, `contexto`, `problema`, `alternativas`, `decisao`, `consequencias`, `incertezas`, `analise_passo_a_passo`)
 - **Cap de contexto:** 30.000 caracteres por sessão (~7.500 tokens)
 
-## Rodando o PoC
+## Rodando o PoC backend
 
 ```bash
 cd backend
@@ -46,14 +55,25 @@ node --env-file=.env index.js          # versão básica
 node --env-file=.env indexAllShot.js   # CoT + few-shot (preferida)
 ```
 
+## Rodando a extensão (dev)
+
+```bash
+cd extension
+npm install
+npm run dev                            # Vite + crxjs em watch, escreve em extension/dist/
+```
+
+Depois em `chrome://extensions/`: ativa Modo dev → **Carregar sem compactação** → seleciona `extension/dist/`. Recarregue o card (↻) após primeiro `npm run dev`. Veja `docs/roadmap_implementacao.md` para detalhes da config Vite e troubleshooting do binding IPv6 + CORS no Windows.
+
 ## Onde Buscar Conhecimento
 
 A documentação segue a metodologia [Sinfonia](https://github.com/assertlab/sinfonia) (4 fases cíclicas, 14 artefatos). **Antes de implementar qualquer coisa, consulte os documentos da fase relevante:**
 
 - **Visão geral e estado de cada fase:** [`docs/README.md`](./docs/README.md)
+- **Roadmap das 12 etapas de implementação da extensão:** [`docs/roadmap_implementacao.md`](./docs/roadmap_implementacao.md) — leitura obrigatória antes de codar; cada etapa lista tarefas, critério de pronto e riscos mitigados
 - **Domínio, personas, fontes de dados, estratégia:** [`docs/01_exposicao/`](./docs/01_exposicao/) — leitura obrigatória para qualquer tarefa de produto
-- **Design de prompt e experimentos:** [`docs/02_composicao/`](./docs/02_composicao/) _(a produzir)_
-- **Arquitetura técnica (C4), riscos de IA, testes, lançamento:** [`docs/03_ensaio/`](./docs/03_ensaio/) _(a produzir)_
+- **Design de prompt e experimentos:** [`docs/02_composicao/`](./docs/02_composicao/) — `prompt_design_record.md` é a fonte canônica do system instruction e do schema dos 8 campos
+- **Arquitetura técnica (C4), riscos de IA, testes:** [`docs/03_ensaio/`](./docs/03_ensaio/) — `canvas_c4_model.md` define os 4 contêineres e 11 componentes; `checklist_analise_riscos_ia.md` enumera os 7 riscos críticos (P1, P2, S1, T1, P3, F1, S6) com IDs de teste rastreáveis
 - **Métricas, escalabilidade, feedback:** [`docs/04_ressonancia/`](./docs/04_ressonancia/) _(a produzir)_
 - **Histórico de mudanças na documentação e racional das decisões:** [`docs/log.md`](./docs/log.md) — consultar antes de grandes mudanças para evitar retrabalho
 
