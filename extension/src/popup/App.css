@@ -69,3 +69,28 @@ body {
 .popup__status--error {
   color: #c62828;
 }
+
+.popup__notice {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px dashed currentColor;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.popup__notice p {
+  margin: 0;
+}
+
+.popup__notice--warn {
+  color: #b26a00;
+}
+
+.popup__button--link {
+  align-self: flex-start;
+  padding: 4px 8px;
+  font-size: 12px;
+}

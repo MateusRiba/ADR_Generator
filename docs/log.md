@@ -7,6 +7,27 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-05-27] feature | Options Page + API key em chrome.storage.session (Etapa 3/12 do roadmap)
+
+Implementada a Etapa 3: página de opções da extensão para o usuário colar a chave da Gemini API, persistida em `chrome.storage.session` (volátil, some ao fechar o Chrome).
+
+**Arquivos criados:**
+- `extension/src/shared/storage/apiKey.ts` — wrapper minimalista sobre `chrome.storage.session` com `getApiKey`, `setApiKey`, `clearApiKey`, `isApiKeySet`. Chave armazenada sob `geminiApiKey`. `getApiKey` retorna `null` se ausente ou string vazia (boundary defensivo).
+- `extension/src/options/{index.html, main.tsx, App.tsx, App.css}` — page MV3 com `<input type="password">`, botões Salvar/Esquecer chave, badge Configurada/Não configurada e bloco explicando a volatilidade da `storage.session`.
+
+**Arquivos editados:**
+- `extension/src/manifest.json` — adicionado `"options_page": "src/options/index.html"` e `"permissions": ["storage"]`. `storage` é o único privilégio novo, mínimo necessário.
+- `extension/src/popup/App.tsx` — `useEffect` lê `isApiKeySet()` no mount; se `false`, exibe aviso com botão "Abrir configurações" que chama `chrome.runtime.openOptionsPage()`.
+- `extension/src/popup/App.css` — estilos `.popup__notice`/`.popup__notice--warn`/`.popup__button--link`.
+
+**Validações:**
+- `npm run build`: passou. Vite gerou `src/options/index.html` no `dist/` e chunk separado para o módulo options.
+- Teste manual no Chrome: badge alterna corretamente entre Configurada/Não configurada ao salvar/esquecer; popup mostra aviso quando chave ausente; fechar o Chrome zera a chave (confirmando volatilidade da `storage.session`).
+
+**Fix de UX durante a sessão:** primeira versão do `.options__button--primary` usava `background: currentColor` + `color: Canvas` para se adaptar ao tema do sistema, mas `currentColor` resolve depois do cascade, então o texto ficava na mesma cor do fundo (invisível) quando o botão era habilitado. Trocado por cores explícitas (`#1976d2` / `#ffffff`).
+
+**Justificativa:** `chrome.storage.session` foi escolhida em vez de `storage.local` pelo trade-off explicitado no `roadmap_implementacao.md`: chave em disco persiste entre sessões mas é exfiltrável em backups e em ataques de filesystem; em memória, some ao fechar o Chrome (custo: re-colar 1x por sessão). Decisão alinhada ao princípio de menor superfície de ataque do `checklist_analise_riscos_ia.md` (risco S1). O aviso de volatilidade no popup e na options torna o trade-off visível ao usuário em vez de silencioso.
+
 ## [2026-05-27] feature | Protocolo de mensagens tipado SW↔popup (Etapa 2/12 do roadmap)
 
 Implementada a Etapa 2 do roadmap: contrato tipado de `chrome.runtime` entre service worker e popup, validado por um ping-pong end-to-end.

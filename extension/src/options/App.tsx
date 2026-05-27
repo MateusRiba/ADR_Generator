@@ -1,0 +1,143 @@
+import { useEffect, useState } from "react";
+import "./App.css";
+import {
+  clearApiKey,
+  isApiKeySet,
+  setApiKey,
+} from "../shared/storage/apiKey";
+
+type Status = "loading" | "configured" | "absent";
+
+export function App() {
+  const [status, setStatus] = useState<Status>("loading");
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  async function refresh() {
+    try {
+      const present = await isApiKeySet();
+      setStatus(present ? "configured" : "absent");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setStatus("absent");
+    }
+  }
+
+  async function handleSave() {
+    const trimmed = draft.trim();
+    if (!trimmed) {
+      setError("Cole uma chave antes de salvar.");
+      return;
+    }
+    setError(null);
+    setFeedback(null);
+    setSaving(true);
+    try {
+      await setApiKey(trimmed);
+      setDraft("");
+      setFeedback("Chave salva nesta sessão.");
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleForget() {
+    setError(null);
+    setFeedback(null);
+    setSaving(true);
+    try {
+      await clearApiKey();
+      setFeedback("Chave removida.");
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <main className="options">
+      <header className="options__header">
+        <h1 className="options__title">ADR Generator — Configurações</h1>
+        <span
+          className={
+            status === "configured"
+              ? "options__badge options__badge--ok"
+              : "options__badge options__badge--warn"
+          }
+        >
+          {status === "loading"
+            ? "Verificando..."
+            : status === "configured"
+              ? "Configurada"
+              : "Não configurada"}
+        </span>
+      </header>
+
+      <section className="options__section">
+        <label className="options__label" htmlFor="api-key">
+          Chave da Gemini API
+        </label>
+        <input
+          id="api-key"
+          className="options__input"
+          type="password"
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={
+            status === "configured"
+              ? "Chave já salva (oculta) — cole uma nova para substituir"
+              : "Cole sua chave"
+          }
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          disabled={saving}
+        />
+        <div className="options__actions">
+          <button
+            className="options__button options__button--primary"
+            type="button"
+            onClick={handleSave}
+            disabled={saving || draft.length === 0}
+          >
+            {saving ? "Salvando..." : "Salvar"}
+          </button>
+          <button
+            className="options__button"
+            type="button"
+            onClick={handleForget}
+            disabled={saving || status !== "configured"}
+          >
+            Esquecer chave
+          </button>
+        </div>
+        {feedback && (
+          <p className="options__status options__status--ok">{feedback}</p>
+        )}
+        {error && (
+          <p className="options__status options__status--error">{error}</p>
+        )}
+      </section>
+
+      <section className="options__notice">
+        <strong>Por que a chave some?</strong>
+        <p>
+          Ela fica em <code>chrome.storage.session</code>, que é volátil: a
+          chave é apagada quando você fecha o Chrome. É mais seguro do que
+          gravar em disco, mas você precisa re-colá-la a cada sessão do
+          navegador.
+        </p>
+      </section>
+    </main>
+  );
+}

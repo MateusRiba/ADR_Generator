@@ -1,0 +1,132 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: Canvas;
+  color: CanvasText;
+}
+
+.options {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.options__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.options__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.options__badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.options__badge--ok {
+  color: #2e7d32;
+}
+
+.options__badge--warn {
+  color: #b26a00;
+}
+
+.options__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.options__label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.options__input {
+  font-size: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 8px 10px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+
+.options__input:disabled {
+  opacity: 0.6;
+}
+
+.options__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.options__button {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.options__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.options__button--primary {
+  background: #1976d2;
+  color: #ffffff;
+  border-color: #1976d2;
+}
+
+.options__status {
+  margin: 0;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.options__status--ok {
+  color: #2e7d32;
+}
+
+.options__status--error {
+  color: #c62828;
+}
+
+.options__notice {
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 12px 14px;
+  border: 1px dashed currentColor;
+  border-radius: 6px;
+  opacity: 0.85;
+}
+
+.options__notice p {
+  margin: 6px 0 0;
+}
+
+.options__notice code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
