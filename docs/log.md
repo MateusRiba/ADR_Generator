@@ -7,6 +7,32 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-05-27] feature | Storage Repository IndexedDB + Markdown Formatter (Etapa 5/12 do roadmap)
+
+Implementada a Etapa 5: persistência local dos ADRs gerados em IndexedDB (componente `Storage Repository` do C4) e exportação `.md` formato Michael Nygard (componente `Markdown Formatter`).
+
+**Arquivos criados:**
+- `extension/src/shared/storage/adrs.ts` — wrapper nativo do IndexedDB (sem dep `idb`, ~110 linhas). DB `adr-generator` v1, store `adrs` (keyPath `id`), index `by-updatedAt`. API: `saveAdr`, `getAdr`, `listAdrs` (cursor descendente por `updatedAt`), `updateAdr`, `deleteAdr`. ID via `crypto.randomUUID()`. Helper `withStore(mode, fn)` abre conexão por operação e fecha no `finally` para evitar vazamento.
+- `extension/src/shared/markdown/formatter.ts` — função pura `toMarkdown(adr, savedAt?)`. Front-matter YAML mínimo (`title`, `date`), 6 seções na ordem Nygard (Contexto, Problema, Alternativas, Decisão, Consequências, Incertezas), listas com `-`, rodapé fixo `*Gerado por IA — revisar antes de versionar.*`. Escape de aspas/`\` no YAML. `analise_passo_a_passo` fica fora do `.md` (é CoT interno do prompt, não conteúdo do ADR).
+
+**Arquivos editados:**
+- `extension/src/shared/types/messages.ts` — +4 mensagens (`SAVE_ADR_TEST`, `ADR_SAVED`, `LIST_ADRS`, `ADRS_LIST`), import de `AdrRecord` para tipar o payload.
+- `extension/src/background/service_worker.ts` — 2 handlers novos (`SAVE_ADR_TEST` e `LIST_ADRS`) seguindo o padrão try/catch dos anteriores. Switch exaustivo cobre os novos response-types para evitar warning de unhandled.
+- `extension/src/popup/App.tsx` — `useEffect` agora também chama `LIST_ADRS` no mount; quando `adr` está populado, mostra os botões "Salvar ADR" (vira "ADR salvo" e desabilita após persistir) e "Exportar .md" lado a lado em `.popup__actions`. Download via `Blob` + `URL.createObjectURL` + anchor click (revoga URL depois). `safeFilename()` slugify mínima para o nome do arquivo. Contagem persistente "N ADR(s) salvo(s) no navegador" visível sempre que há registros — é o sinal de que o IndexedDB sobreviveu ao fechar do popup.
+- `extension/src/popup/App.css` — `.popup__actions` (flex row, gap 8px, botões com `flex: 1`) e `.popup__saved-count` (mono 11px, opacidade 0.7).
+
+**Validações:**
+- `npm run build` passou (47 módulos, sem warnings TS).
+- Teste manual: gera ADR → "Salvar ADR" → contagem sobe para 1 → fecha popup → reabre → "1 ADR salvo no navegador" persiste. Gera segundo ADR → salva → sobe para 2. "Exportar .md" baixa arquivo com slug do título, abre com front-matter YAML e 6 seções na ordem correta + rodapé. DevTools → Application → IndexedDB → `adr-generator/adrs` mostra registros com `id` UUID, `createdAt`, `updatedAt`, `content` completo.
+
+**Decisões de implementação:**
+- **IndexedDB nativo vs lib `idb`:** zero deps, suficiente para o escopo (CRUD básico + index por timestamp). Roadmap já antecipava essa escolha. O wrapper `withStore` resolve o pitfall de transactions auto-commit ao yieldar entre operações async.
+- **Storage no Background, popup via mensagem:** alinhado ao C4 (Storage Repository é componente do Background container). Mantém o popup desacoplado dos detalhes do IndexedDB, com benefício extra de o SW ter acesso ao DB para Etapas 6+ (transcrição persistida cada 30s — S6 mitigation).
+- **Markdown Formatter em `shared/`, chamado do popup:** download requer contexto de página (anchor click). Mas a função é pura e estará disponível para o SW quando a Etapa 8 fizer auto-save + auto-export.
+- **`analise_passo_a_passo` excluído do `.md`:** é raciocínio CoT interno do prompt (`prompt_design_record.md` §2). Sai do JSON na UI mas não vaza para o artefato versionado.
+- **Front-matter mínimo nesta etapa:** apenas `title` e `date`. Rodapé "Gerado por IA" prepara T1; a mitigação completa de T1 (front-matter `ai_generated: true`, `gerado_por`, revisão obrigatória do `decisao`) fica para Etapa 12 conforme `checklist_analise_riscos_ia.md` §6.
+- **Sem mudança no `manifest.json`:** IndexedDB é API web nativa disponível em MV3 SW sem permissão extra. Princípio do menor privilégio mantido.
+
 ## [2026-05-27] feature | Porta de indexAllShot.js → shared/gemini/ (Etapa 4/12 do roadmap)
 
 Implementada a Etapa 4: pipeline `generateAdr(transcript, apiKey)` rodando dentro do service worker via `fetch` direto ao endpoint REST da Gemini, sem SDK Node.js (que não funciona em MV3).

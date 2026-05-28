@@ -1,6 +1,7 @@
 import { onMessage } from "../shared/runtime/messaging";
 import { generateAdr, GeminiError } from "../shared/gemini/client";
 import { getApiKey } from "../shared/storage/apiKey";
+import { saveAdr, listAdrs } from "../shared/storage/adrs";
 import garnetTranscript from "../shared/gemini/fixtures/garnet_redis.txt?raw";
 
 const TRANSCRIPT_CAP = 30_000;
@@ -41,8 +42,32 @@ onMessage(async (msg) => {
         return { type: "ERROR", message };
       }
     }
+    case "SAVE_ADR_TEST": {
+      console.log("[SW] SAVE_ADR_TEST received");
+      try {
+        const record = await saveAdr(msg.adr);
+        console.log("[SW] ADR salvo:", record.id, record.title);
+        return { type: "ADR_SAVED", record };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("[SW] saveAdr falhou", err);
+        return { type: "ERROR", message };
+      }
+    }
+    case "LIST_ADRS": {
+      try {
+        const records = await listAdrs();
+        return { type: "ADRS_LIST", records };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("[SW] listAdrs falhou", err);
+        return { type: "ERROR", message };
+      }
+    }
     case "PONG":
     case "ADR_READY":
+    case "ADR_SAVED":
+    case "ADRS_LIST":
     case "ERROR":
       return;
   }

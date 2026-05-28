@@ -122,3 +122,19 @@ body {
   padding: 4px 8px;
   font-size: 12px;
 }
+
+.popup__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.popup__actions .popup__button {
+  flex: 1;
+}
+
+.popup__saved-count {
+  margin: 0;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  opacity: 0.7;
+}
