@@ -7,6 +7,34 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-05-27] feature | Porta de indexAllShot.js → shared/gemini/ (Etapa 4/12 do roadmap)
+
+Implementada a Etapa 4: pipeline `generateAdr(transcript, apiKey)` rodando dentro do service worker via `fetch` direto ao endpoint REST da Gemini, sem SDK Node.js (que não funciona em MV3).
+
+**Arquivos criados:**
+- `extension/src/shared/gemini/types.ts` — interface `AdrJson` com os 8 campos do schema canônico + constante `ADR_REQUIRED_FIELDS` (typed via `satisfies`).
+- `extension/src/shared/gemini/prompt.ts` — `SYSTEM_INSTRUCTION` portada **literalmente** de `backend/indexAllShot.js` (CoT + few-shot + regras de fidelidade). Função `buildUserPrompt(transcript)` espelha o template `Gere um ADR estruturado baseado nesta transcrição: ...`.
+- `extension/src/shared/gemini/schema.ts` — `ADR_RESPONSE_SCHEMA` como JSON puro (sem `SchemaType` enums da SDK), exportada como `as const` para preservar tipagem literal.
+- `extension/src/shared/gemini/client.ts` — `generateAdr(transcript, apiKey)` faz POST em `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=...` com `temperature: 0`, `responseMimeType: "application/json"`, `responseSchema`. Parsing extrai `candidates[0].content.parts[0].text`, faz `JSON.parse` e valida os 8 campos (string × array-of-string) antes de devolver. Erros tipados via classe `GeminiError`.
+- `extension/src/shared/gemini/fixtures/garnet_redis.txt` — cópia de `backend/archives/trancriptionTest.txt` (36KB, debate Garnet × Redis × Dragonfly × Memcached). Importada no SW via `?raw` do Vite.
+
+**Arquivos editados:**
+- `extension/src/manifest.json` — `"host_permissions": ["https://generativelanguage.googleapis.com/*"]`. Único privilégio novo, mínimo necessário para o fetch ao Gemini.
+- `extension/src/shared/types/messages.ts` — ativados 3 tipos previamente comentados: `GENERATE_ADR_TEST`, `ADR_READY` (carrega `AdrJson`), `ERROR` (carrega `message`).
+- `extension/src/background/service_worker.ts` — handler `GENERATE_ADR_TEST` lê API key via `getApiKey()`, fatia transcript em `TRANSCRIPT_CAP = 30_000` chars (alinhado ao cap do CLAUDE.md), chama `generateAdr` e devolve `ADR_READY` ou `ERROR` (sem vazar stack para a UI).
+- `extension/src/popup/App.tsx` — botão primário "Gerar ADR de teste" (disabled quando `apiKeyReady !== true` ou `generating`). Resultado exibido em `<details>` com `<pre>` do JSON formatado.
+- `extension/src/popup/App.css` — `.popup__button--primary`, `.popup__adr`, `.popup__adr-json`; `min-width` do body subiu para 360px para caber o JSON.
+
+**Validações:**
+- `npm run build`: passou (45 módulos transformados, SW chunk de 41KB com o transcript inline, sem erros TS).
+- Teste manual no Chrome: clica "Gerar ADR de teste" com API key configurada → ~6-10s depois aparece o JSON dos 8 campos preenchidos coerentemente (decisão = "Migrar para Garnet com soft launch", alternativas listam Dragonfly, Memcached e otimização do Redis Premium). Sem API key, retorna erro "API key não configurada" sem chamar o Gemini.
+
+**Decisões de implementação:**
+- **`fetch` direto vs SDK:** SDK `@google/generative-ai` depende de `Node:stream` e crypto não-disponíveis em MV3 service workers. REST endpoint v1beta funciona com `fetch` nativo.
+- **Validação no client em vez de no SW handler:** mantém `client.ts` como boundary único — se o schema mudar (Etapa 12 anti-injection), todos os pontos de uso herdam a validação.
+- **Transcript fixa via `?raw`:** alternativa a inlinar 36KB em template literal. O `?raw` do Vite tipa como `string` e tree-shake-friendly para futuras fixtures.
+- **Cap de 30K chars:** alinhado à decisão de domínio (`canvas_estrategia_acao.md`, ~7.500 tokens). A fixture do backend tem 36KB; aplicamos `.slice(0, TRANSCRIPT_CAP)` para honrar o contrato desde já em vez de tratar "test mode" como exceção.
+
 ## [2026-05-27] feature | Options Page + API key em chrome.storage.session (Etapa 3/12 do roadmap)
 
 Implementada a Etapa 3: página de opções da extensão para o usuário colar a chave da Gemini API, persistida em `chrome.storage.session` (volátil, some ao fechar o Chrome).

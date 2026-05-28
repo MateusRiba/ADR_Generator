@@ -5,7 +5,7 @@
 
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 360px;
 }
 
 .popup {
@@ -87,6 +87,34 @@ body {
 
 .popup__notice--warn {
   color: #b26a00;
+}
+
+.popup__button--primary {
+  background: #1976d2;
+  color: #ffffff;
+  border-color: #1976d2;
+}
+
+.popup__adr {
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.popup__adr summary {
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.popup__adr-json {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .popup__button--link {

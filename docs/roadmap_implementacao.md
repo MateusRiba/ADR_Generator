@@ -2,7 +2,7 @@
 
 Este documento é o plano-mestre de implementação da extensão (após as fases de Exposição e Composição do Sinfonia). Está dividido em **12 etapas independentes**, cada uma terminando com uma saída testável manualmente. Cada etapa equivale a uma sessão de desenvolvimento.
 
-**Status atual:** Etapas 1, 2 e 3 concluídas em 2026-05-27. Próxima sessão começa pela Etapa 4.
+**Status atual:** Etapas 1, 2, 3 e 4 concluídas em 2026-05-27. Próxima sessão começa pela Etapa 5.
 
 ## Stack Decidida (vale para todas as etapas)
 
@@ -43,7 +43,7 @@ Este documento é o plano-mestre de implementação da extensão (após as fases
 | 1 | Fundação: Vite + crxjs + manifest + scaffold | Extensão carrega, popup React abre, SW loga "booted" | ✅ Concluída 2026-05-27 |
 | 2 | Tipos de mensagens + ping SW↔popup | Popup envia `PING`, SW responde `PONG`, tipos compartilhados | ✅ Concluída 2026-05-27 |
 | 3 | Options Page + API key em `storage.session` | Usuário cola chave Gemini; UI indica se está configurada | ✅ Concluída 2026-05-27 |
-| 4 | Porta de `indexAllShot.js` → `shared/gemini/` | Teste manual: transcrição fixa → JSON com 8 campos válido | ⬜ |
+| 4 | Porta de `indexAllShot.js` → `shared/gemini/` | Teste manual: transcrição fixa → JSON com 8 campos válido | ✅ Concluída 2026-05-27 |
 | 5 | Storage Repository (IndexedDB) + Markdown Formatter | ADR persiste e exporta `.md` formato Nygard | ⬜ |
 | 6 | Content Script + Web Speech API no Meet | Buffer de transcrição chega ao SW (`TRANSCRIPT_CHUNK`) | ⬜ |
 | 7 | Capture View + banner consentimento | Captura ponta-a-ponta com guard LGPD (mitiga **P1**, atende `T-UX-02`) | ⬜ |
