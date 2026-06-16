@@ -1,7 +1,8 @@
 // Markdown Formatter (componente do C4 — pode rodar no Background ou na UI).
 // Converte AdrJson em Markdown formato Michael Nygard, pronto para download.
 // O campo `analise_passo_a_passo` é raciocínio CoT interno e não entra no .md.
-// Rodapé "Gerado por IA" prepara a mitigação de T1 (front-matter completo em Etapa 12).
+// Mitigação T1 (confusão IA × decisão humana): front-matter `ai_generated: true`
+// + rodapé "Gerado por IA — revisar antes de versionar".
 
 import type { AdrJson } from "../gemini/types";
 
@@ -15,6 +16,7 @@ export function toMarkdown(adr: AdrJson, savedAt: Date = new Date()): string {
   return `---
 title: "${title}"
 date: ${date}
+ai_generated: true
 ---
 
 # ${adr.titulo}

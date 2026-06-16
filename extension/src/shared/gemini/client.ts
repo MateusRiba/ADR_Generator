@@ -4,39 +4,43 @@ import { ADR_REQUIRED_FIELDS, type AdrJson } from "./types";
 
 const MODEL = "gemini-3-flash-preview";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const REQUEST_TIMEOUT_MS = 60_000;
 
 export class GeminiError extends Error {
-  constructor(message: string, readonly cause?: unknown) {
+  constructor(
+    message: string,
+    readonly cause?: unknown,
+  ) {
     super(message);
     this.name = "GeminiError";
   }
 }
 
-export async function generateAdr(
-  transcript: string,
-  apiKey: string
-): Promise<AdrJson> {
+export interface GeminiCallBody {
+  systemInstruction: { parts: { text: string }[] };
+  contents: { role: string; parts: { text: string }[] }[];
+  generationConfig: {
+    temperature: number;
+    responseMimeType: string;
+    responseSchema: unknown;
+  };
+}
+
+/**
+ * Chamada base à Gemini: faz o POST, trata HTTP/timeout, extrai o texto do
+ * candidato e devolve o JSON parseado (ainda não validado). Compartilhada por
+ * `generateAdr` (geração completa) e `refineField` (refino por seção).
+ */
+export async function callGeminiJson(
+  body: GeminiCallBody,
+  apiKey: string,
+): Promise<unknown> {
   if (!apiKey) {
     throw new GeminiError("API key da Gemini não configurada.");
   }
-  if (!transcript.trim()) {
-    throw new GeminiError("Transcrição vazia.");
-  }
 
-  const body = {
-    systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: buildUserPrompt(transcript) }],
-      },
-    ],
-    generationConfig: {
-      temperature: 0,
-      responseMimeType: "application/json",
-      responseSchema: ADR_RESPONSE_SCHEMA,
-    },
-  };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   let response: Response;
   try {
@@ -44,27 +48,62 @@ export async function generateAdr(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
   } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new GeminiError(
+        `A Gemini não respondeu em ${REQUEST_TIMEOUT_MS / 1000}s. Tente novamente.`,
+        err,
+      );
+    }
     throw new GeminiError("Falha de rede ao chamar a Gemini.", err);
+  } finally {
+    clearTimeout(timer);
   }
 
   if (!response.ok) {
     const text = await response.text().catch(() => "");
+    if (response.status === 429) {
+      throw new GeminiError(
+        "Limite de uso da Gemini atingido (429). Aguarde alguns instantes e tente de novo.",
+      );
+    }
     throw new GeminiError(
-      `Gemini retornou HTTP ${response.status}: ${text.slice(0, 300)}`
+      `Gemini retornou HTTP ${response.status}: ${text.slice(0, 300)}`,
     );
   }
 
   const payload = (await response.json()) as unknown;
   const text = extractCandidateText(payload);
 
-  let parsed: unknown;
   try {
-    parsed = JSON.parse(text);
+    return JSON.parse(text);
   } catch (err) {
     throw new GeminiError("Resposta da Gemini não é JSON válido.", err);
   }
+}
+
+export async function generateAdr(
+  transcript: string,
+  apiKey: string,
+): Promise<AdrJson> {
+  if (!transcript.trim()) {
+    throw new GeminiError("Transcrição vazia.");
+  }
+
+  const parsed = await callGeminiJson(
+    {
+      systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+      contents: [{ role: "user", parts: [{ text: buildUserPrompt(transcript) }] }],
+      generationConfig: {
+        temperature: 0,
+        responseMimeType: "application/json",
+        responseSchema: ADR_RESPONSE_SCHEMA,
+      },
+    },
+    apiKey,
+  );
 
   return validateAdr(parsed);
 }

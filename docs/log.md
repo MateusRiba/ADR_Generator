@@ -7,6 +7,85 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-16] feature | Etapas 7–12: pipeline completo, editor, refino, histórico e endurecimento
+
+Implementadas as Etapas 7 a 12 numa única sessão (a pedido), fechando o MVP. Fluxo ponta a ponta: captura → consentimento → geração via Gemini → edição/refino → histórico → export `.md`.
+
+**Contrato de mensagens (`shared/types/messages.ts`):** reescrito para o conjunto final. Removidas as mensagens de teste (`GENERATE_ADR_TEST`, `SAVE_ADR_TEST`, `ADR_READY`). Adicionadas: `DISCARD_TRANSCRIPT`, `GENERATE_ADR`, `UPDATE_ADR`, `DELETE_ADR`, `ADR_DELETED`, `REFINE_SECTION`, `SECTION_REFINED`. Novos tipos auxiliares `AdrFieldKey`/`AdrFieldValue`.
+
+**Etapa 7 — Capture View + consentimento (P1):**
+- Popup refatorado em **router de 3 views** (`popup/App.tsx`): abas Captura | Editor | Histórico, com Editor desabilitado até haver ADR ativo. Estado `view` + `activeAdr` local (navegação não precisa de mensagens).
+- `popup/views/Capture.tsx` — estados derivados de `capturing`/`charCount` (idle → recording → stopped). **Banner modal de consentimento** com checkbox obrigatória antes do START; aparece toda vez (não memorizado — P1). Botões Iniciar/Parar/Descartar/Gerar.
+
+**Etapa 8 — Pipeline (P3):** handler `GENERATE_ADR` no SW orquestra `buffer → generateAdr → saveAdr → resetBuffer()`. A transcrição bruta é apagada do IndexedDB **imediatamente após** validação+persistência (P3). Tratamento de erro no `client.ts`: timeout de 60s via `AbortController`, mensagem dedicada para `429`, e a mensagem de schema inválido já existente. Popup mostra spinner durante `generating` e navega ao Editor no `ADR_SAVED`.
+
+**Etapa 9 — Editor:** `popup/views/Editor.tsx` + `popup/components/AdrField.tsx`. Campos string em `<textarea>` autoexpand; arrays como lista editável (add/remove); `analise_passo_a_passo` em `<details>` colapsável (não vai pro `.md`). Save com debounce de 300ms via `UPDATE_ADR`. Metadata de campos (`ADR_STRING_FIELDS`, `ADR_ARRAY_FIELDS`, `ADR_FIELD_LABELS`, `isArrayField`) movida para `gemini/types.ts`.
+
+**Etapa 10 — Refinement Engine:** `shared/gemini/refine.ts` com `refineField(adr, field, instruction, apiKey)`. `responseSchema` restrito ao tipo do campo (string OU array de strings), `{ "value": ... }`. `client.ts` refatorado: extraída `callGeminiJson(body, apiKey)` (fetch + HTTP/timeout + parse) compartilhada entre geração e refino. UI: botão "Melhorar…" em cada `AdrField` → modal de instrução no Editor → `REFINE_SECTION` → substitui só aquele campo e salva.
+
+**Etapa 11 — Histórico:** `popup/views/History.tsx`. Lista por `updatedAt` desc (cursor já existente), filtro por título client-side, abrir no Editor, exportar `.md` inline, excluir com confirmação em dois passos.
+
+**Etapa 12 — Endurecimento:**
+- **S1 (prompt injection):** `prompt.ts` envolve a transcrição em `<<<TRANSCRIPT_START>>>`/`<<<TRANSCRIPT_END>>>` e a `SYSTEM_INSTRUCTION` instrui a tratar o delimitado como dado, ignorando comandos embutidos. Refletido em `prompt_design_record.md`.
+- **T1:** `formatter.ts` adiciona `ai_generated: true` ao front-matter YAML (rodapé "Gerado por IA" já existia).
+- **P3:** implementado na Etapa 8 (acima).
+- **F1:** documentado na UI (Capture) e em "Limitações conhecidas" do README.
+- **README:** seção "Usando a extensão" (manual passo a passo) + "Limitações conhecidas" (F1, dependência das legendas, cap, LGPD, S1).
+
+**Validações:** `npm run build` (`tsc --noEmit` + vite) passou — 55 módulos. Testes manuais no Chrome (`T-SEG-01`, `T-PRIV-01`, `T-ROB-02`, `T-FUNC-*`) **pendentes pelo usuário**.
+
+**Decisões de implementação:**
+- **CRUD de ADRs via SW** (UPDATE/DELETE/LIST por mensagem) em vez de o popup tocar o IndexedDB direto — mantém o C4 (Storage Repository no Background) e consistência com a Etapa 5.
+- **`callGeminiJson` extraída** para não duplicar fetch/erro entre `generateAdr` e `refineField`.
+- **Navegação de views é estado local do popup**, não mensagem — o popup é efêmero e não há necessidade de persistir a aba ativa.
+- **`DISCARD_TRANSCRIPT`** adicionada para o usuário descartar uma captura sem gerar ADR (zera buffer + para o content script).
+
+---
+
+## [2026-06-16] decision | Captura por legendas (DOM) do Meet em vez de Web Speech API (Etapa 6)
+
+Durante a Etapa 6, ao revisar com o usuário, decidiu-se trocar a fonte de captura. A primeira implementação usava a **Web Speech API**, mas ela só capta o **microfone local** — o áudio dos demais participantes sai pelo alto-falante e não entra no mic, tornando a transcrição quase inútil para ADRs de reunião (que precisam da fala de todos).
+
+**Decisão:** ler as **legendas (closed captions) que o próprio Meet renderiza no DOM** — a "alternativa em avaliação" já prevista em `canvas_mapeamento_fontes_dados.md` Fonte 1 (linha 56). Vantagens: capta todos os participantes e usa o STT do Google (mais preciso). Custo: exige a extensão ativa **e** o usuário ligar as legendas (CC) durante a reunião. A única forma de "pegar só no fim" seria a transcrição nativa do Workspace (depende de plano pago) — descartada para o MVP zero-backend.
+
+**Reescritos nesta decisão:**
+- `extension/src/content/meet_capture.ts` — agora localiza o contêiner de legendas por âncoras estáveis (`role="region"`, `aria-label*="aption"/"egenda"`, com fallback de classe `.a4cQT`) e observa via `MutationObserver`. A extração de texto **não depende de classes internas**: faz `diff` do `innerText` do contêiner contra uma cauda do que já foi enviado (`newPortion` acha o maior sufixo/prefixo sobreposto), o que costura tanto o crescimento in-place do texto quanto a rolagem das legendas. Debounce de 800ms (`CAPTION_DEBOUNCE_MS`) para não fragmentar palavras. Se as legendas ainda não estiverem ligadas, observa o `body` até o contêiner aparecer. Só observa sob `START_CAPTURE` (preserva o guard P1 da Etapa 7).
+- `extension/src/shared/config.ts` — removido `RECOGNITION_LANG`; adicionado `CAPTION_DEBOUNCE_MS=800`.
+- `extension/src/content/speech.d.ts` — **removido** (era só para a Web Speech API).
+- `extension/src/popup/App.tsx` — nota agora instrui ligar as legendas (CC); F1 reformulado (erros de STT em vez de sotaque).
+
+**Risco assumido:** o Meet ofusca/rotaciona classes CSS. O único ponto que precisa de manutenção é o seletor do **contêiner** (isolado em `CONTAINER_SELECTORS`); a extração de texto é resiliente a mudança de classes. Validação dos seletores contra o DOM real do Meet fica como tarefa de teste manual (ver abaixo). Itens abaixo descrevem o restante da Etapa 6 (SW, storage, mensagens) que independe da fonte de captura.
+
+---
+
+## [2026-06-16] feature | Content Script + captura de transcrição no Meet (Etapa 6/12 do roadmap)
+
+Implementada a Etapa 6: captura de transcrição do Google Meet (componente `Content Script` do C4) e acúmulo no service worker (componente `Transcription Orchestrator`), com persistência periódica em IndexedDB para sobreviver à reciclagem do SW (risco **S6**). A fonte de captura final (legendas via DOM) está detalhada na entry `decision` acima.
+
+**Arquivos criados:**
+- `extension/src/content/meet_capture.ts` — content script injetado em `meet.google.com/*` (ver entry `decision` acima para a mecânica de leitura das legendas).
+- `extension/src/shared/config.ts` — parâmetros transversais: `TRANSCRIPT_CAP=30_000`, `BUFFER_PERSIST_INTERVAL_MS=30_000`, `CAPTION_DEBOUNCE_MS=800`. Removeu o número mágico que estava inline no SW.
+- `extension/src/shared/storage/transcript.ts` — buffer da sessão em IndexedDB próprio (`adr-generator-transcript` v1, store `buffer`, chave fixa `current`). API: `saveTranscriptBuffer`, `loadTranscriptBuffer`, `clearTranscriptBuffer`. DB separado do `adr-generator` para não acoplar a versão do schema dos ADRs ao buffer volátil.
+
+**Arquivos editados:**
+- `extension/src/manifest.json` — `content_scripts` (match `https://meet.google.com/*`, `run_at: document_idle`) e `host_permissions` += Meet. Sem permissão `tabs` (o host permission já habilita `tabs.query` por URL).
+- `extension/src/shared/types/messages.ts` — +6 mensagens: `START_CAPTURE`, `STOP_CAPTURE`, `TRANSCRIPT_CHUNK`, `GET_CAPTURE_STATE`, `CAPTURE_STATE`. `TRANSCRIPT_UPDATED` do plano original foi unificada em `CAPTURE_STATE` (`{ capturing, charCount }`), que serve tanto de resposta a `GET_CAPTURE_STATE` quanto de push do SW ao popup.
+- `extension/src/background/service_worker.ts` — Transcription Orchestrator: buffer em memória, restore preguiçoso do IndexedDB (`ensureRestored`), `appendChunk` com cap 30K + persist throttled (≥30s) + broadcast `CAPTURE_STATE`. Meeting Controller: `routeToMeetTab` localiza a aba do Meet (`tabs.query` por URL, prioriza a ativa) e encaminha START/STOP via `tabs.sendMessage`. `capturing` é reidratado quando chunks voltam a chegar após reciclagem do SW.
+- `extension/src/popup/App.tsx` — botão de teste "Iniciar captura (teste)"/"Parar captura", contador de caracteres ao vivo, assinatura de `CAPTURE_STATE` via `chrome.runtime.onMessage` + `GET_CAPTURE_STATE` no mount. Nota visível sobre viés de sotaque (F1).
+- `extension/src/popup/App.css` — `.popup__capture`, `.popup__char-count`, `.popup__button--danger`, `.popup__hint--muted`.
+
+**Validações:**
+- `npm install` (node_modules ausente no clone) + `npm run build` passou (`tsc --noEmit` limpo, 50 módulos). Manifest gerado pelo crxjs expõe o content script com loader e registra os chunks como `web_accessible_resources` automaticamente.
+- Testes manuais no Chrome (a executar pelo usuário): entrar numa reunião do Meet → ligar legendas (CC) → "Iniciar captura" → o contador incrementa conforme as legendas surgem; **validar os seletores de `CONTAINER_SELECTORS` contra o DOM real** (se o contador não mexer, inspecionar o contêiner de legendas e ajustar o seletor); matar o SW em `chrome://extensions/` → reabrir popup → `GET_CAPTURE_STATE` devolve o `charCount` recuperado do IndexedDB (T-ROB-02).
+
+**Decisões de implementação:**
+- **START/STOP antecipados da Etapa 2 → 6:** a Etapa 6 não é testável sem um gatilho de captura. As mensagens entram agora e a Etapa 7 só as envolve com o banner de consentimento + as 3 views. Botão atual é explicitamente "(teste)".
+- **Roteamento via Meeting Controller no SW** (em vez de o popup falar direto com o content script): alinhado ao C4 e necessário, já que `runtime.sendMessage` do popup não alcança content scripts — só `tabs.sendMessage` direcionado por tab alcança.
+- **Buffer em IndexedDB separado** dos ADRs: desacopla versionamento de schema; o buffer é volátil/efêmero e será apagado após gerar o ADR (P3, Etapa 8).
+- **Persist throttled (≥30s) em vez de a cada chunk:** reduz escritas mantendo a janela de perda em ≤30s, conforme o roadmap. `STOP_CAPTURE` força um persist final.
+
+---
+
 ## [2026-05-27] feature | Storage Repository IndexedDB + Markdown Formatter (Etapa 5/12 do roadmap)
 
 Implementada a Etapa 5: persistência local dos ADRs gerados em IndexedDB (componente `Storage Repository` do C4) e exportação `.md` formato Michael Nygard (componente `Markdown Formatter`).

@@ -2,7 +2,7 @@
 
 Este documento é o plano-mestre de implementação da extensão (após as fases de Exposição e Composição do Sinfonia). Está dividido em **12 etapas independentes**, cada uma terminando com uma saída testável manualmente. Cada etapa equivale a uma sessão de desenvolvimento.
 
-**Status atual:** Etapas 1, 2, 3, 4 e 5 concluídas em 2026-05-27. Próxima sessão começa pela Etapa 6.
+**Status atual:** Etapas 1–5 concluídas em 2026-05-27; Etapas 6–12 concluídas em 2026-06-16. **MVP completo.** Próximo ciclo: fase de Ressonância (medição de impacto, escalabilidade, feedback). Validação manual no Chrome pendente pelo usuário.
 
 ## Stack Decidida (vale para todas as etapas)
 
@@ -45,13 +45,13 @@ Este documento é o plano-mestre de implementação da extensão (após as fases
 | 3 | Options Page + API key em `storage.session` | Usuário cola chave Gemini; UI indica se está configurada | ✅ Concluída 2026-05-27 |
 | 4 | Porta de `indexAllShot.js` → `shared/gemini/` | Teste manual: transcrição fixa → JSON com 8 campos válido | ✅ Concluída 2026-05-27 |
 | 5 | Storage Repository (IndexedDB) + Markdown Formatter | ADR persiste e exporta `.md` formato Nygard | ✅ Concluída 2026-05-27 |
-| 6 | Content Script + Web Speech API no Meet | Buffer de transcrição chega ao SW (`TRANSCRIPT_CHUNK`) | ⬜ |
-| 7 | Capture View + banner consentimento | Captura ponta-a-ponta com guard LGPD (mitiga **P1**, atende `T-UX-02`) | ⬜ |
-| 8 | Pipeline completo: capture → Gemini → save | Primeiro ADR real de uma reunião; transcrição bruta apagada (mitiga **P3**) | ⬜ |
-| 9 | ADR Editor View (8 campos editáveis) | Usuário edita inline e salva | ⬜ |
-| 10 | Refinement Engine (regenera campo isolado) | "Melhore o contexto" funciona — Ideia G do `canvas_ideacao_solucao.md` | ⬜ |
-| 11 | History View + busca por título | Lista de ADRs anteriores acessível | ⬜ |
-| 12 | Endurecimento (S6, S1, T1) + casos de teste críticos | `T-SEG-01`, `T-PRIV-01`, `T-ROB-02` passam | ⬜ |
+| 6 | Content Script + Web Speech API no Meet | Buffer de transcrição chega ao SW (`TRANSCRIPT_CHUNK`) | ✅ Concluída 2026-06-16 |
+| 7 | Capture View + banner consentimento | Captura ponta-a-ponta com guard LGPD (mitiga **P1**, atende `T-UX-02`) | ✅ Concluída 2026-06-16 |
+| 8 | Pipeline completo: capture → Gemini → save | Primeiro ADR real de uma reunião; transcrição bruta apagada (mitiga **P3**) | ✅ Concluída 2026-06-16 |
+| 9 | ADR Editor View (8 campos editáveis) | Usuário edita inline e salva | ✅ Concluída 2026-06-16 |
+| 10 | Refinement Engine (regenera campo isolado) | "Melhore o contexto" funciona — Ideia G do `canvas_ideacao_solucao.md` | ✅ Concluída 2026-06-16 |
+| 11 | History View + busca por título | Lista de ADRs anteriores acessível | ✅ Concluída 2026-06-16 |
+| 12 | Endurecimento (S6, S1, T1) + casos de teste críticos | `T-SEG-01`, `T-PRIV-01`, `T-ROB-02` passam | ✅ Concluída 2026-06-16 (testes manuais pendentes) |
 
 ---
 
@@ -181,7 +181,14 @@ Este documento é o plano-mestre de implementação da extensão (após as fases
 - Abre Meet, fala algo (com microfone permitido) → contador no popup incrementa.
 - Mata o SW manualmente em `chrome://extensions/` → ele reativa, recupera buffer do IndexedDB (`T-ROB-02`).
 
-**Riscos:** F1 (viés de sotaque da Web Speech API) — apenas **documentar** na UI ("Transcrição automática pode falhar com sotaques regionais; revise antes de gerar"). Mitigação final do F1 ocorre no manual do produto.
+**Riscos:** F1 (erros do STT automático — sotaques regionais, termos técnicos PT/EN) — apenas **documentar** na UI ("a transcrição automática pode conter erros; revise antes de gerar"). Mitigação final do F1 ocorre no manual do produto.
+
+**Nota de implementação (2026-06-16):**
+
+- **Fonte de captura: legendas (CC) do Meet via DOM, não Web Speech API.** Decisão tomada na execução da etapa (ver `docs/log.md`): a Web Speech API só capta o microfone local — não a fala dos demais participantes. A leitura das legendas (já prevista como alternativa em `canvas_mapeamento_fontes_dados.md` Fonte 1) capta todos e usa o STT do Google. Custo: o usuário precisa **ligar as legendas** na reunião. O content script localiza o contêiner por âncoras estáveis (`role`/`aria-label`, fallback de classe) e faz `diff` do `innerText` — a extração não depende de classes internas; só o seletor do contêiner (`CONTAINER_SELECTORS`) precisa de manutenção se o Meet mudar a marcação.
+- **START/STOP antecipados** (estavam previstos como TODO da Etapa 2) porque a Etapa 6 precisa de um gatilho para ser testável. O SW (Meeting Controller) roteia esses comandos para a aba do Meet via `chrome.tabs.query({ url: "https://meet.google.com/*" })` + `chrome.tabs.sendMessage` — sem permissão `tabs` extra, pois o `host_permissions` do Meet já habilita o filtro por URL. O popup ganhou um **botão de teste temporário** "Iniciar captura (teste)". A Etapa 7 reaproveita exatamente essas mensagens, envolvendo o botão com o banner de consentimento (P1) e a navegação de 3 views.
+- **`TRANSCRIPT_UPDATED`** do plano original foi unificada em `CAPTURE_STATE` (mesma carga: `{ capturing, charCount }`), usada tanto como resposta a `GET_CAPTURE_STATE` quanto como push do SW ao popup.
+- **Buffer** persistido em IndexedDB próprio (`adr-generator-transcript`) para desacoplar a versão do schema dos ADRs.
 
 ---
 

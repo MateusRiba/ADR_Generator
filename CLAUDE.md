@@ -6,7 +6,7 @@ Guia para Claude Code (claude.ai/code) trabalhar neste repositório.
 
 **ADR Generator** — extensão Chrome (Manifest V3) que captura transcrição de reuniões no Google Meet e gera Architecture Decision Records (ADRs) estruturados via Google Gemini API. MVP zero-backend, armazenamento local no navegador, processamento aderente a LGPD.
 
-Estado atual: **Etapa 1/12 da extensão concluída** (scaffold MV3 com Vite + crxjs + React + TS carregando no Chrome). PoC backend (`backend/indexAllShot.js`) continua como referência canônica do prompt e schema do Gemini. Roadmap completo das 12 etapas em [`docs/roadmap_implementacao.md`](./docs/roadmap_implementacao.md).
+Estado atual: **MVP completo — Etapas 1–12/12 concluídas** (captura por legendas do Meet → geração via Gemini → editor com refino por seção → histórico → export `.md`; endurecimento S1/T1/P3 aplicado). Testes manuais no Chrome pendentes. PoC backend (`backend/indexAllShot.js`) continua como referência canônica do prompt e schema do Gemini. Roadmap das 12 etapas em [`docs/roadmap_implementacao.md`](./docs/roadmap_implementacao.md).
 
 ## Estrutura do Diretório
 
@@ -42,7 +42,7 @@ ADR_Generator/
 - **Linguagem (PoC):** Node.js (ESM, `"type": "module"`)
 - **LLM:** Google Gemini via `@google/generative-ai` (^0.11.5), modelo `gemini-3-flash-preview`, `temperature: 0`, `responseMimeType: "application/json"` + `responseSchema`
 - **Env:** `dotenv` (^16.6.1), arquivo `backend/.env` com `GEMINI_API_KEY`
-- **Extensão (em construção):** Manifest V3, Vite 5.4 + `@crxjs/vite-plugin` 2.0-beta, React 18.3 (só popup/options), TypeScript 5.6, Web Speech API (captura — Etapa 6), `chrome.storage.session` (API key — Etapa 3) + IndexedDB (ADRs — Etapa 5), Gemini via `fetch` direto no service worker (Etapa 4)
+- **Extensão (em construção):** Manifest V3, Vite 5.4 + `@crxjs/vite-plugin` 2.0-beta, React 18.3 (só popup/options), TypeScript 5.6, captura via leitura das legendas (CC) do Meet no DOM com `MutationObserver` (Etapa 6), `chrome.storage.session` (API key — Etapa 3) + IndexedDB (ADRs — Etapa 5), Gemini via `fetch` direto no service worker (Etapa 4)
 - **Padrão de ADR:** Michael Nygard (campos: `titulo`, `contexto`, `problema`, `alternativas`, `decisao`, `consequencias`, `incertezas`, `analise_passo_a_passo`)
 - **Cap de contexto:** 30.000 caracteres por sessão (~7.500 tokens)
 
