@@ -189,18 +189,12 @@ export function Editor({ record, onSaved }: EditorProps) {
 
       <details className="editor__cot">
         <summary>{ADR_FIELD_LABELS.analise_passo_a_passo}</summary>
-        <AdrField
-          label={ADR_FIELD_LABELS.analise_passo_a_passo}
-          value={adr.analise_passo_a_passo}
-          onChange={(v) => updateField("analise_passo_a_passo", v)}
-          onRefine={() => {
-            setRefineField("analise_passo_a_passo");
-            setRefineInstruction("");
-          }}
-          refining={refiningField === "analise_passo_a_passo"}
-        />
+        <div className="editor__cot-body">
+          {adr.analise_passo_a_passo || "Sem análise registrada."}
+        </div>
         <p className="popup__hint popup__hint--muted">
-          Raciocínio interno da IA — não entra no <code>.md</code> exportado.
+          Raciocínio interno da IA — somente leitura; não entra no{" "}
+          <code>.md</code> exportado.
         </p>
       </details>
 
