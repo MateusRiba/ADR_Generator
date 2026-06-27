@@ -4,6 +4,9 @@ import { sendMessage } from "../../shared/runtime/messaging";
 
 type Status = "loading" | "configured" | "absent";
 
+// Palavra que o usuário precisa digitar para confirmar o reset total.
+const WIPE_CONFIRM_WORD = "APAGAR";
+
 export function Settings({
   onChanged,
 }: {
@@ -15,6 +18,7 @@ export function Settings({
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [confirmingWipe, setConfirmingWipe] = useState(false);
+  const [wipeConfirmText, setWipeConfirmText] = useState("");
   const [wiping, setWiping] = useState(false);
 
   useEffect(() => {
@@ -77,6 +81,7 @@ export function Settings({
       const r = await sendMessage({ type: "WIPE_ALL_DATA" });
       if (r.type === "DATA_WIPED") {
         setConfirmingWipe(false);
+        setWipeConfirmText("");
         setFeedback("Todos os dados foram apagados (ADRs, transcrição e chave).");
         await refresh();
       } else if (r.type === "ERROR") {
@@ -155,37 +160,62 @@ export function Settings({
       <div className="field">
         <label className="field__label">Dados locais</label>
         {confirmingWipe ? (
-          <div className="popup__actions">
+          <>
+            <p className="popup__hint">
+              Digite <strong>{WIPE_CONFIRM_WORD}</strong> para confirmar a exclusão
+              permanente de todos os ADRs, da transcrição em buffer e da chave da
+              API.
+            </p>
+            <input
+              className="history__search"
+              type="text"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              placeholder={WIPE_CONFIRM_WORD}
+              value={wipeConfirmText}
+              onChange={(e) => setWipeConfirmText(e.target.value.toUpperCase())}
+              disabled={wiping}
+              autoFocus
+            />
+            <div className="popup__actions">
+              <button
+                type="button"
+                className="popup__button popup__button--danger"
+                onClick={handleWipe}
+                disabled={wiping || wipeConfirmText.trim() !== WIPE_CONFIRM_WORD}
+              >
+                {wiping ? "Apagando…" : "Apagar tudo"}
+              </button>
+              <button
+                type="button"
+                className="popup__button"
+                onClick={() => {
+                  setConfirmingWipe(false);
+                  setWipeConfirmText("");
+                }}
+                disabled={wiping}
+              >
+                Cancelar
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
             <button
               type="button"
               className="popup__button popup__button--danger"
-              onClick={handleWipe}
-              disabled={wiping}
+              onClick={() => setConfirmingWipe(true)}
             >
-              {wiping ? "Apagando…" : "Confirmar exclusão"}
+              Apagar todos os dados
             </button>
-            <button
-              type="button"
-              className="popup__button"
-              onClick={() => setConfirmingWipe(false)}
-              disabled={wiping}
-            >
-              Cancelar
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="popup__button popup__button--danger"
-            onClick={() => setConfirmingWipe(true)}
-          >
-            Apagar todos os dados
-          </button>
+            <p className="popup__hint popup__hint--muted">
+              Remove permanentemente todos os ADRs salvos, a transcrição em buffer
+              e a chave da API. Não há como desfazer.
+            </p>
+          </>
         )}
-        <p className="popup__hint popup__hint--muted">
-          Remove permanentemente todos os ADRs salvos, a transcrição em buffer e
-          a chave da API. Não há como desfazer.
-        </p>
       </div>
 
       <div className="popup__notice">

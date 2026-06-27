@@ -5,6 +5,14 @@ export async function sendMessage<T extends RuntimeMessage>(
 ): Promise<RuntimeMessage> {
   const response = await chrome.runtime.sendMessage(msg);
   if (!isRuntimeMessage(response)) {
+    // null/undefined = o service worker não respondeu este tipo de mensagem.
+    // Em dev isso quase sempre é um SW desatualizado após rebuild: recarregue a
+    // extensão em chrome://extensions (o popup é novo, mas o SW ainda é o antigo).
+    if (response == null) {
+      throw new Error(
+        `O service worker não reconheceu "${msg.type}". Recarregue a extensão em chrome://extensions (SW desatualizado).`
+      );
+    }
     throw new Error(
       `Resposta inválida do listener para ${msg.type}: ${JSON.stringify(response)}`
     );
