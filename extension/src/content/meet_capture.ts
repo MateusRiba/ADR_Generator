@@ -26,11 +26,26 @@ import {
 } from "./recording_overlay";
 
 // Âncoras do contêiner de legendas. aria-label varia com o idioma da UI do Meet.
+// Estritos primeiro (region), depois fallbacks soltos — todos filtrados de
+// controles em findContainer (o botão "Legendas"/engrenagem também casa o
+// aria-label, mas seu texto é o ligature do ícone, ex.: "settings").
 const CONTAINER_SELECTORS = [
   '[role="region"][aria-label*="aption" i]', // EN: "Captions"
-  '[aria-label*="egenda" i]', // PT: "Legendas"
-  "div.a4cQT", // classe conhecida (frágil) — fallback
+  '[role="region"][aria-label*="egenda" i]', // PT: "Legendas"
+  '[aria-label*="aption" i]', // fallback solto (EN)
+  '[aria-label*="egenda" i]', // fallback solto (PT)
+  "div.a4cQT", // classe conhecida (frágil) — último recurso
 ];
+
+// Um match só é aceito se NÃO for (nem estiver dentro de) um controle: botões e
+// itens de menu carregam aria-label de legendas mas contêm só ícones.
+const CONTROL_SELECTOR =
+  'button, [role="button"], [role="menuitem"], [role="menu"], [role="dialog"]';
+
+// Subárvores ignoradas ao extrair o texto das legendas: ícones (Material/Symbols
+// renderizam o nome do ícone como ligature de texto), botões e nós aria-hidden.
+const NON_TEXT_SELECTOR =
+  'button, [role="button"], svg, i, [class*="icon" i], [class*="material-symbols" i], [aria-hidden="true"]';
 
 let capturing = false;
 let observer: MutationObserver | null = null;
@@ -47,10 +62,33 @@ function send(msg: RuntimeMessage): void {
 
 function findContainer(): HTMLElement | null {
   for (const sel of CONTAINER_SELECTORS) {
-    const el = document.querySelector<HTMLElement>(sel);
-    if (el) return el;
+    for (const el of document.querySelectorAll<HTMLElement>(sel)) {
+      if (!el.closest(CONTROL_SELECTOR)) return el; // pula botões/menus/diálogos
+    }
   }
   return null;
+}
+
+/**
+ * Texto das legendas sem ícones/controles. Não usa `innerText` direto porque a
+ * região pode conter ícones (Material/Symbols viram texto via ligature, ex.:
+ * "settings") e botões. Percorre os nós de texto pulando subárvores não-texto.
+ */
+function extractCaptionText(container: HTMLElement): string {
+  let out = "";
+  const walk = (node: Node): void => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      out += node.nodeValue ?? "";
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const el = node as HTMLElement;
+    if (el.matches(NON_TEXT_SELECTOR)) return;
+    for (const child of el.childNodes) walk(child);
+    out += " "; // separa elementos (ex.: nome do falante × fala); normalize colapsa
+  };
+  walk(container);
+  return out;
 }
 
 function normalize(text: string): string {
@@ -58,16 +96,21 @@ function normalize(text: string): string {
 }
 
 /**
- * Parte nova de `current` ainda não presente em `tail`. Acha o maior sufixo de
- * `tail` que é prefixo de `current` e devolve o resto — trata tanto o
- * crescimento in-place do texto do falante quanto a rolagem das legendas.
+ * Parte nova de `current` ainda não emitida. Acha o maior sufixo de `tail` que
+ * aparece em `current` (última ocorrência) e devolve o que vem DEPOIS dele.
+ *
+ * Busca a âncora em qualquer posição de `current` (não só no início): a região de
+ * legendas do Meet **acumula** o texto em vez de ser uma janela deslizante, então
+ * o ponto onde paramos cai no meio/fim de `current`. Casar só no início reemitia
+ * o texto inteiro a cada flush (transcrição redundante). O laço de k grande→pequeno
+ * tolera o refino do STT na cauda (as últimas palavras mudam enquanto o falante fala).
  */
 function newPortion(tail: string, current: string): string {
   const max = Math.min(tail.length, current.length);
   for (let k = max; k > 0; k--) {
-    if (tail.slice(tail.length - k) === current.slice(0, k)) {
-      return current.slice(k);
-    }
+    const piece = tail.slice(tail.length - k);
+    const idx = current.lastIndexOf(piece);
+    if (idx !== -1) return current.slice(idx + k);
   }
   return current; // sem sobreposição: legenda totalmente nova
 }
@@ -75,7 +118,7 @@ function newPortion(tail: string, current: string): string {
 function flushCaptions(): void {
   const container = findContainer();
   if (!container) return;
-  const current = normalize(container.innerText);
+  const current = normalize(extractCaptionText(container));
   if (!current) return;
   const delta = newPortion(emittedTail, current).trim();
   if (!delta) return;
