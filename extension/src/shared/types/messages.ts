@@ -19,12 +19,24 @@ export type RuntimeMessage =
   | { type: "DISCARD_TRANSCRIPT" }
   | { type: "TRANSCRIPT_CHUNK"; text: string }
   | { type: "GET_CAPTURE_STATE" }
-  | { type: "CAPTURE_STATE"; capturing: boolean; charCount: number }
+  | {
+      type: "CAPTURE_STATE";
+      capturing: boolean;
+      charCount: number;
+      truncated: boolean;
+    }
+  // Modo redação (P2): popup busca o buffer para o usuário revisar/editar antes
+  // de enviar à Gemini. Trechos removidos não chegam à API.
+  | { type: "GET_TRANSCRIPT" }
+  | { type: "TRANSCRIPT_TEXT"; text: string }
   // ── Pipeline de geração (Etapa 8) ─────────────────────────────────────────
-  // GENERATE_ADR consome o buffer, chama a Gemini, salva e apaga a transcrição
-  // bruta (P3). Responde ADR_SAVED com o registro persistido (→ Editor).
-  | { type: "GENERATE_ADR" }
+  // GENERATE_ADR consome o buffer (ou o `transcript` editado, se vier), chama a
+  // Gemini, salva e apaga a transcrição bruta (P3). Responde ADR_SAVED.
+  | { type: "GENERATE_ADR"; transcript?: string }
   | { type: "ADR_SAVED"; record: AdrRecord }
+  // ── Reset total de dados (T-PRIV-04) ──────────────────────────────────────
+  | { type: "WIPE_ALL_DATA" }
+  | { type: "DATA_WIPED" }
   // ── CRUD de ADRs (Etapas 9 e 11) ──────────────────────────────────────────
   | { type: "LIST_ADRS" }
   | { type: "ADRS_LIST"; records: AdrRecord[] }

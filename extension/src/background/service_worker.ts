@@ -1,8 +1,14 @@
 import { onMessage } from "../shared/runtime/messaging";
 import { generateAdr, GeminiError } from "../shared/gemini/client";
 import { refineField } from "../shared/gemini/refine";
-import { getApiKey } from "../shared/storage/apiKey";
-import { saveAdr, listAdrs, updateAdr, deleteAdr } from "../shared/storage/adrs";
+import { getApiKey, clearApiKey } from "../shared/storage/apiKey";
+import {
+  saveAdr,
+  listAdrs,
+  updateAdr,
+  deleteAdr,
+  clearAllAdrs,
+} from "../shared/storage/adrs";
 import {
   loadTranscriptBuffer,
   saveTranscriptBuffer,
@@ -25,6 +31,16 @@ let buffer = "";
 let capturing = false;
 let lastPersistAt = 0;
 let restored = false;
+// Sinaliza que o cap de 30K foi atingido e parte da fala foi descartada (T-IA-05).
+let truncated = false;
+
+/** Liga/desliga o ponto vermelho de "gravando" no ícone da extensão (T-UX-03). */
+function setRecordingBadge(on: boolean): void {
+  chrome.action.setBadgeText({ text: on ? "●" : "" }).catch(() => {});
+  if (on) {
+    chrome.action.setBadgeBackgroundColor({ color: "#c62828" }).catch(() => {});
+  }
+}
 
 async function ensureRestored(): Promise<void> {
   if (restored) return;
@@ -37,16 +53,27 @@ async function persistBuffer(): Promise<void> {
   await saveTranscriptBuffer(buffer);
 }
 
+function captureState(): {
+  type: "CAPTURE_STATE";
+  capturing: boolean;
+  charCount: number;
+  truncated: boolean;
+} {
+  return { type: "CAPTURE_STATE", capturing, charCount: buffer.length, truncated };
+}
+
 function broadcastState(): void {
   // Empurra o estado ao popup, se aberto. Rejeita quando não há receptor — ok.
-  chrome.runtime
-    .sendMessage({ type: "CAPTURE_STATE", capturing, charCount: buffer.length })
-    .catch(() => {});
+  chrome.runtime.sendMessage(captureState()).catch(() => {});
 }
 
 async function appendChunk(text: string): Promise<void> {
   await ensureRestored();
-  if (buffer.length >= TRANSCRIPT_CAP) return; // cap atingido: ignora o resto
+  if (buffer.length >= TRANSCRIPT_CAP) {
+    truncated = true; // cap atingido: ignora o resto e avisa a UI
+    broadcastState();
+    return;
+  }
   const addition = buffer ? ` ${text}` : text;
   buffer = (buffer + addition).slice(0, TRANSCRIPT_CAP);
   if (Date.now() - lastPersistAt >= BUFFER_PERSIST_INTERVAL_MS) {
@@ -60,6 +87,8 @@ async function resetBuffer(): Promise<void> {
   buffer = "";
   capturing = false;
   lastPersistAt = 0;
+  truncated = false;
+  setRecordingBadge(false);
   await clearTranscriptBuffer();
 }
 
@@ -139,38 +168,50 @@ onMessage(async (msg) => {
         };
       }
       capturing = true;
+      setRecordingBadge(true);
       console.log("[SW] captura iniciada");
-      return { type: "CAPTURE_STATE", capturing, charCount: buffer.length };
+      return captureState();
     }
     case "STOP_CAPTURE": {
       await ensureRestored();
       capturing = false;
+      setRecordingBadge(false);
       await routeToMeetTab({ type: "STOP_CAPTURE" });
       await persistBuffer();
       console.log("[SW] captura parada, buffer persistido:", buffer.length);
-      return { type: "CAPTURE_STATE", capturing, charCount: buffer.length };
+      return captureState();
     }
     case "DISCARD_TRANSCRIPT": {
       await routeToMeetTab({ type: "STOP_CAPTURE" });
       await resetBuffer();
       console.log("[SW] transcrição descartada");
-      return { type: "CAPTURE_STATE", capturing, charCount: buffer.length };
+      return captureState();
     }
     case "TRANSCRIPT_CHUNK": {
       // Chunk chegando reidrata `capturing` mesmo após reciclagem do SW.
       capturing = true;
+      setRecordingBadge(true);
       await appendChunk(msg.text);
       return;
     }
     case "GET_CAPTURE_STATE": {
       await ensureRestored();
-      return { type: "CAPTURE_STATE", capturing, charCount: buffer.length };
+      return captureState();
+    }
+    case "GET_TRANSCRIPT": {
+      // Modo redação (P2): entrega o buffer ao popup para revisão/edição.
+      await ensureRestored();
+      return { type: "TRANSCRIPT_TEXT", text: buffer };
     }
 
     // ── Pipeline de geração (Etapa 8) ───────────────────────────────────────
     case "GENERATE_ADR": {
       await ensureRestored();
-      if (!buffer.trim()) {
+      // Modo redação: usa o texto editado pelo usuário, se veio; senão o buffer.
+      // Trechos removidos na revisão não entram na payload da Gemini (P2).
+      const source =
+        typeof msg.transcript === "string" ? msg.transcript : buffer;
+      if (!source.trim()) {
         return { type: "ERROR", message: "Nenhuma transcrição capturada ainda." };
       }
       const apiKey = await getApiKey();
@@ -178,7 +219,7 @@ onMessage(async (msg) => {
         return { type: "ERROR", message: "API key não configurada. Abra Configurações." };
       }
       try {
-        const adr = await generateAdr(buffer, apiKey);
+        const adr = await generateAdr(source, apiKey);
         const record = await saveAdr(adr);
         // P3: transcrição bruta apagada IMEDIATAMENTE após validação+persistência.
         await resetBuffer();
@@ -187,6 +228,20 @@ onMessage(async (msg) => {
         return { type: "ADR_SAVED", record };
       } catch (err) {
         console.error("[SW] GENERATE_ADR falhou", err);
+        return { type: "ERROR", message: errorMessage(err) };
+      }
+    }
+
+    // ── Reset total de dados (T-PRIV-04) ────────────────────────────────────
+    case "WIPE_ALL_DATA": {
+      try {
+        await clearAllAdrs();
+        await resetBuffer(); // zera buffer/estado, badge e IndexedDB da transcrição
+        await clearApiKey();
+        console.log("[SW] todos os dados apagados");
+        return { type: "DATA_WIPED" };
+      } catch (err) {
+        console.error("[SW] WIPE_ALL_DATA falhou", err);
         return { type: "ERROR", message: errorMessage(err) };
       }
     }
@@ -234,10 +289,12 @@ onMessage(async (msg) => {
     // ── Mensagens de resposta (não tratadas no SW) ──────────────────────────
     case "PONG":
     case "CAPTURE_STATE":
+    case "TRANSCRIPT_TEXT":
     case "ADR_SAVED":
     case "ADRS_LIST":
     case "ADR_DELETED":
     case "SECTION_REFINED":
+    case "DATA_WIPED":
     case "ERROR":
       return;
   }

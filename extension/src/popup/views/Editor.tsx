@@ -32,12 +32,20 @@ export function Editor({ record, onSaved }: EditorProps) {
   const [refineField, setRefineField] = useState<AdrFieldKey | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
   const [refiningField, setRefiningField] = useState<AdrFieldKey | null>(null);
+  // F1 (T-FUNC-07): export só libera após o usuário revisar a Decisão — editando
+  // o campo ou marcando o checkbox. Em memória, re-exige a cada ADR aberto.
+  const [decisaoReviewed, setDecisaoReviewed] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Recarrega quando o registro ativo muda (ex.: abriu outro ADR do histórico).
   useEffect(() => {
     setAdr(record.content);
   }, [record.id, record.content]);
+
+  // Reset da revisão só quando troca o ADR (não a cada autosave do mesmo).
+  useEffect(() => {
+    setDecisaoReviewed(false);
+  }, [record.id]);
 
   function persist(next: AdrJson) {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -67,6 +75,7 @@ export function Editor({ record, onSaved }: EditorProps) {
     const next = { ...adr, [field]: value } as AdrJson;
     setAdr(next);
     persist(next);
+    if (field === "decisao") setDecisaoReviewed(true); // editar = revisar (F1)
   }
 
   async function runRefine() {
@@ -105,23 +114,40 @@ export function Editor({ record, onSaved }: EditorProps) {
           type="button"
           className="popup__button"
           onClick={() => downloadAdrMarkdown(adr, new Date(record.updatedAt))}
+          disabled={!decisaoReviewed}
+          title={
+            decisaoReviewed
+              ? "Exportar como Markdown"
+              : "Revise a decisão antes de exportar"
+          }
         >
           Exportar .md
         </button>
       </div>
 
       {VISIBLE_FIELDS.map((field) => (
-        <AdrField
-          key={field}
-          label={ADR_FIELD_LABELS[field]}
-          value={adr[field]}
-          onChange={(v) => updateField(field, v)}
-          onRefine={() => {
-            setRefineField(field);
-            setRefineInstruction("");
-          }}
-          refining={refiningField === field}
-        />
+        <div key={field}>
+          <AdrField
+            label={ADR_FIELD_LABELS[field]}
+            value={adr[field]}
+            onChange={(v) => updateField(field, v)}
+            onRefine={() => {
+              setRefineField(field);
+              setRefineInstruction("");
+            }}
+            refining={refiningField === field}
+          />
+          {field === "decisao" && (
+            <label className="modal__check editor__review">
+              <input
+                type="checkbox"
+                checked={decisaoReviewed}
+                onChange={(e) => setDecisaoReviewed(e.target.checked)}
+              />
+              Revisei a decisão (obrigatório para exportar).
+            </label>
+          )}
+        </div>
       ))}
 
       <details className="editor__cot">

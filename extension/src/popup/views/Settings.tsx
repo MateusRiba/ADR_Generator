@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { clearApiKey, isApiKeySet, setApiKey } from "../../shared/storage/apiKey";
+import { sendMessage } from "../../shared/runtime/messaging";
 
 type Status = "loading" | "configured" | "absent";
 
@@ -13,6 +14,8 @@ export function Settings({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [confirmingWipe, setConfirmingWipe] = useState(false);
+  const [wiping, setWiping] = useState(false);
 
   useEffect(() => {
     refresh();
@@ -63,6 +66,26 @@ export function Settings({
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleWipe() {
+    setError(null);
+    setFeedback(null);
+    setWiping(true);
+    try {
+      const r = await sendMessage({ type: "WIPE_ALL_DATA" });
+      if (r.type === "DATA_WIPED") {
+        setConfirmingWipe(false);
+        setFeedback("Todos os dados foram apagados (ADRs, transcrição e chave).");
+        await refresh();
+      } else if (r.type === "ERROR") {
+        setError(r.message);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setWiping(false);
     }
   }
 
@@ -127,6 +150,42 @@ export function Settings({
         {error && (
           <p className="popup__status popup__status--error">{error}</p>
         )}
+      </div>
+
+      <div className="field">
+        <label className="field__label">Dados locais</label>
+        {confirmingWipe ? (
+          <div className="popup__actions">
+            <button
+              type="button"
+              className="popup__button popup__button--danger"
+              onClick={handleWipe}
+              disabled={wiping}
+            >
+              {wiping ? "Apagando…" : "Confirmar exclusão"}
+            </button>
+            <button
+              type="button"
+              className="popup__button"
+              onClick={() => setConfirmingWipe(false)}
+              disabled={wiping}
+            >
+              Cancelar
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="popup__button popup__button--danger"
+            onClick={() => setConfirmingWipe(true)}
+          >
+            Apagar todos os dados
+          </button>
+        )}
+        <p className="popup__hint popup__hint--muted">
+          Remove permanentemente todos os ADRs salvos, a transcrição em buffer e
+          a chave da API. Não há como desfazer.
+        </p>
       </div>
 
       <div className="popup__notice">

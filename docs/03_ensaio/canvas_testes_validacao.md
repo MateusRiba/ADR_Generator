@@ -178,12 +178,22 @@ Para liberar v0.1 internamente:
 
 ## 7. Resultados e Relatórios
 
-### Estado atual (snapshot ao iniciar a fase de Ensaio)
+### Estado atual (snapshot — atualizado em 2026-06-27)
+
+> 🟦 = **código completo, validação manual no Chrome pendente**. ⬜ = não implementado.
 
 | Caso | Estado |
 |---|---|
 | `T-IA-01` (regressão Garnet/Redis) | ✅ Aprovado em 2026-05-27 — ver `canvas_design_experimentos.md` §6. |
-| Todos os demais | ⬜ Pendente — a extensão ainda não foi implementada. |
+| `T-FUNC-06` (disclaimer + front-matter `gerado_por`/`revisado: false`) | 🟦 Implementado 2026-06-27 (`formatter.ts`). |
+| `T-FUNC-07` (revisão obrigatória da `decisao` antes do export) | 🟦 Implementado 2026-06-27 (`Editor.tsx`). Mitiga F1. |
+| `T-FUNC-08` (modo redação — trecho removido não vai à Gemini) | 🟦 Implementado 2026-06-27 (`GET_TRANSCRIPT` + `Capture.tsx`). Mitiga P2. |
+| `T-IA-05` (cap de 30K + aviso "trecho cortado") | 🟦 Implementado 2026-06-27 (flag `truncated`). |
+| `T-PRIV-04` (reset total "Apagar todos os dados") | 🟦 Implementado 2026-06-27 (`WIPE_ALL_DATA`). |
+| `T-ROB-04` (retry/backoff em 429/5xx) | 🟦 Implementado 2026-06-27 (`client.ts`). |
+| `T-UX-03` (badge de gravação no ícone) | 🟦 Parcial 2026-06-27 — ponto ● vermelho; contador de tempo fora de escopo. |
+| `T-SEG-01` (prompt injection), `T-PRIV-01` (apagamento), `T-ROB-02` (SW reciclado), demais `T-FUNC-*` | 🟦 Código pronto (Etapas 8–12), validação manual pendente. |
+| Demais casos (PERF, COMPAT, UX restantes, `T-UX-01` onboarding) | ⬜ Pendente. |
 
 ### Estrutura de relatório por execução
 

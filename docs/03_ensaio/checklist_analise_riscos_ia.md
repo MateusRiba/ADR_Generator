@@ -28,6 +28,7 @@ Realizado de forma colaborativa pela equipe do projeto (papel de líder: Tech Le
 ### Pontos de verificação
 
 - ✅ **Documentar o viés esperado da Web Speech API** no manual do usuário, com recomendação de revisão humana obrigatória do campo `decisao` antes do export.
+- ✅ **Revisão humana obrigatória da `decisao` antes do export** — implementado em 2026-06-27 (`Editor.tsx`): botão "Exportar .md" desabilitado até o usuário editar a decisão ou marcar "Revisei a decisão" (`T-FUNC-07`).
 - ⬜ **Auditoria dos exemplos few-shot** quanto a diversidade de vozes citadas — pendente para a fase de Ensaio (ver Experimento `T-FUNC-04` no canvas de testes).
 - ⬜ **Teste comparativo de alternativas** em ADR sobre escolha entre stack Google × stack independente, medindo se o modelo enumera as opções com tratamento equilibrado.
 
@@ -52,7 +53,8 @@ Realizado de forma colaborativa pela equipe do projeto (papel de líder: Tech Le
 - ✅ **Processamento local da transcrição** (decisão arquitetural — ver [`canvas_c4_model.md`](./canvas_c4_model.md) §"Decisões Arquiteturais"): Web Speech API roda no browser; a transcrição **só sai** quando o usuário aciona a geração do ADR. Isso mitiga parcialmente **P1** e **P2**, mas não substitui consentimento explícito.
 - ✅ **Persistência local apenas no navegador do usuário:** zero backend, zero base centralizada de dados de terceiros (mitiga vazamento em larga escala).
 - ⬜ **Banner de consentimento obrigatório** dentro da reunião antes de iniciar a captura — verificar usabilidade real em campo (Experimento 3 de captura ponta-a-ponta).
-- ⬜ **Política explícita de retenção de transcrições brutas:** transcrição apagada do IndexedDB **após** geração do ADR (ou, no máximo, ao fechar a aba).
+- ✅ **Política explícita de retenção de transcrições brutas:** transcrição apagada do IndexedDB **após** geração do ADR (P3, Etapa 8). Reset total ("Apagar todos os dados") adicionado em 2026-06-27 (`T-PRIV-04`).
+- ✅ **Modo redação pré-envio:** implementado em 2026-06-27 — usuário revisa/edita a transcrição antes de gerar; trechos removidos não entram na payload da Gemini (mitiga **P2**, `T-FUNC-08`).
 - ⬜ **API key como BYOK** (Bring Your Own Key): usuário fornece a própria chave e a responsabilidade pelo uso da API fica registrada no projeto Google Cloud dele, evitando que o produto se torne controlador de dados pessoais.
 - ⬜ **Disclaimer LGPD na primeira instalação** explicando o que sai do navegador, para onde e por quanto tempo é retido pela Google.
 

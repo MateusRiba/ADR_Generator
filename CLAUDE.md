@@ -26,7 +26,7 @@ ADR_Generator/
 │   └── src/
 │       ├── manifest.json
 │       ├── background/        ← service worker (TS puro, sem React)
-│       └── popup/             ← UI React (Capture / Editor / History)
+│       └── popup/             ← UI React (Capture / Editor / History / Settings)
 └── docs/                      ← base de documentação (metodologia Sinfonia)
     ├── README.md              ← índice das 4 fases
     ├── log.md                 ← registro temporal append-only
@@ -42,7 +42,7 @@ ADR_Generator/
 - **Linguagem (PoC):** Node.js (ESM, `"type": "module"`)
 - **LLM:** Google Gemini via `@google/generative-ai` (^0.11.5), modelo `gemini-3-flash-preview`, `temperature: 0`, `responseMimeType: "application/json"` + `responseSchema`
 - **Env:** `dotenv` (^16.6.1), arquivo `backend/.env` com `GEMINI_API_KEY`
-- **Extensão (em construção):** Manifest V3, Vite 5.4 + `@crxjs/vite-plugin` 2.0-beta, React 18.3 (só popup/options), TypeScript 5.6, captura via leitura das legendas (CC) do Meet no DOM com `MutationObserver` (Etapa 6), `chrome.storage.session` (API key — Etapa 3) + IndexedDB (ADRs — Etapa 5), Gemini via `fetch` direto no service worker (Etapa 4)
+- **Extensão (em construção):** Manifest V3, Vite 5.4 + `@crxjs/vite-plugin` 2.0-beta, React 18.3 (só no popup — configurações são uma aba do popup, não há mais options page standalone), TypeScript 5.6, captura via leitura das legendas (CC) do Meet no DOM com `MutationObserver` (Etapa 6), `chrome.storage.session` (API key — Etapa 3) + IndexedDB (ADRs — Etapa 5), Gemini via `fetch` direto no service worker (Etapa 4)
 - **Padrão de ADR:** Michael Nygard (campos: `titulo`, `contexto`, `problema`, `alternativas`, `decisao`, `consequencias`, `incertezas`, `analise_passo_a_passo`)
 - **Cap de contexto:** 30.000 caracteres por sessão (~7.500 tokens)
 

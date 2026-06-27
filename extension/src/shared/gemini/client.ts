@@ -5,11 +5,18 @@ import { ADR_REQUIRED_FIELDS, type AdrJson } from "./types";
 const MODEL = "gemini-3-flash-preview";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const REQUEST_TIMEOUT_MS = 60_000;
+// Retry com backoff exponencial em falhas transitórias (429/5xx/rede) — T-ROB-04.
+const MAX_ATTEMPTS = 3;
+const BACKOFF_MS = [1_000, 2_000, 4_000];
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export class GeminiError extends Error {
   constructor(
     message: string,
     readonly cause?: unknown,
+    /** Falha transitória (429/5xx/rede) elegível a retry com backoff. */
+    readonly retryable = false,
   ) {
     super(message);
     this.name = "GeminiError";
@@ -39,6 +46,28 @@ export async function callGeminiJson(
     throw new GeminiError("API key da Gemini não configurada.");
   }
 
+  let lastError: GeminiError = new GeminiError("Falha ao chamar a Gemini.");
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    try {
+      return await attemptGemini(body, apiKey);
+    } catch (err) {
+      if (!(err instanceof GeminiError) || !err.retryable) {
+        throw err; // erro definitivo (timeout, 4xx≠429, JSON inválido)
+      }
+      lastError = err;
+      if (attempt < MAX_ATTEMPTS - 1) {
+        await sleep(BACKOFF_MS[attempt]);
+      }
+    }
+  }
+  throw lastError; // esgotou as tentativas em falha transitória
+}
+
+/** Uma única tentativa de chamada. Erros transitórios vêm com `retryable: true`. */
+async function attemptGemini(
+  body: GeminiCallBody,
+  apiKey: string,
+): Promise<unknown> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -52,12 +81,14 @@ export async function callGeminiJson(
     });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
+      // Timeout próprio: definitivo (não retentar — triplicaria a latência).
       throw new GeminiError(
         `A Gemini não respondeu em ${REQUEST_TIMEOUT_MS / 1000}s. Tente novamente.`,
         err,
       );
     }
-    throw new GeminiError("Falha de rede ao chamar a Gemini.", err);
+    // Falha de rede transitória: retentável.
+    throw new GeminiError("Falha de rede ao chamar a Gemini.", err, true);
   } finally {
     clearTimeout(timer);
   }
@@ -67,6 +98,15 @@ export async function callGeminiJson(
     if (response.status === 429) {
       throw new GeminiError(
         "Limite de uso da Gemini atingido (429). Aguarde alguns instantes e tente de novo.",
+        undefined,
+        true,
+      );
+    }
+    if (response.status >= 500) {
+      throw new GeminiError(
+        `Gemini indisponível (HTTP ${response.status}). Tente novamente.`,
+        undefined,
+        true,
       );
     }
     throw new GeminiError(

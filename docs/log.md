@@ -7,6 +7,34 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-27] feature | Endurecimento pós-MVP: gate F1, retry/backoff, redação P2 + quick wins
+
+Ao cruzar o `checklist_analise_riscos_ia.md` §6 e o `canvas_testes_validacao.md` §3 com o código real, identificaram-se mitigações documentadas ainda não implementadas. Esta sessão fecha 3 itens críticos (riscos F1, P2, robustez) e 4 quick wins (PRIV/UX/transparência). Só código (`extension/src/`); doc atualizada nesta mesma entrada.
+
+**Itens críticos:**
+- **F1 — revisão obrigatória da decisão (`T-FUNC-07`):** o botão "Exportar .md" do `Editor.tsx` fica desabilitado (com tooltip) até o usuário **revisar a Decisão** — editar o campo conta como revisão, ou marcar o checkbox "Revisei a decisão". Estado em memória, re-exigido a cada ADR aberto. **Decisão (com o usuário):** gate só no Editor; o export inline do Histórico permanece livre (re-export de ADR já salvo) e o front-matter `revisado: false` continua estático.
+- **P2 — modo redação pré-envio (`T-FUNC-08`):** novas mensagens `GET_TRANSCRIPT`/`TRANSCRIPT_TEXT`; `GENERATE_ADR` passou a aceitar `transcript?`. Na Captura, bloco colapsável "Revisar transcrição antes de enviar" carrega o buffer num `<textarea>` editável; o texto editado é o **único** enviado ao Gemini — trechos removidos não saem do navegador. Sem abrir a revisão, o SW usa o buffer (comportamento anterior).
+- **T-ROB-04 — retry/backoff:** `client.ts` agora tenta até 3× (1s/2s/4s) em **429**, **≥500** e erro de rede transitório; **não** retenta timeout próprio (`AbortError`) nem 4xx≠429. `GeminiError` ganhou flag `retryable`; `attemptGemini` isolada de `callGeminiJson`.
+
+**Quick wins:**
+- **T-PRIV-04 — "Apagar todos os dados":** botão danger no `Settings.tsx` (confirmação inline em 2 passos) → `WIPE_ALL_DATA` no SW → `clearAllAdrs()` + `clearTranscriptBuffer()` + `clearApiKey()` + reset de estado/badge.
+- **T-IA-05 — aviso de cap:** flag `truncated` no payload `CAPTURE_STATE`, setada no early-return de `appendChunk` ao atingir os 30K; aviso amarelo na Captura.
+- **T-UX-03 — badge de gravação:** `setRecordingBadge()` liga o ponto ● vermelho no ícone durante a captura (`chrome.action`), desligado em stop/discard/geração/wipe. (O "contador de tempo" do caso fica fora do escopo — o popup já tem dot pulsante.)
+- **T-FUNC-06 — front-matter:** `formatter.ts` emite `gerado_por: adr_generator_v<versão>` e `revisado: false` além de `ai_generated: true`; `exportAdr.ts` injeta a versão do manifest.
+
+**Limitação assumida:** `truncated` é estado em memória do SW — se o service worker for reciclado, o aviso some (o contador no cap ainda evidencia o limite). Não persistido para não inflar o schema do buffer.
+
+**Validação:** `npm run build` (`tsc --noEmit` + vite) passou. Testes manuais no Chrome **pendentes** (ver `canvas_testes_validacao.md` §7).
+
+---
+
+## [2026-06-27] feature | Configurações embutidas no popup + injeção sob demanda do content script
+
+- **Settings no modal:** a página de options standalone virou uma aba ⚙ discreta no popup (`popup/views/Settings.tsx`), reaproveitando a lógica de API key. Removidos `src/options/` e a entrada `options_page` do manifest (fonte única). O aviso de chave ausente é ocultado quando já se está na aba de configurações.
+- **Fix de captura:** o erro genérico "Nenhuma aba do Google Meet ativa" tinha como causa comum o content script ausente em abas abertas antes de a extensão (re)carregar (cenário de dev). O SW agora **injeta o content script sob demanda** (`chrome.scripting.executeScript`, lendo os arquivos do manifest) quando o `sendMessage` falha, e distingue "sem aba" de "sem content script" com mensagens próprias. Adicionada a permissão `scripting`.
+
+---
+
 ## [2026-06-16] feature | Etapas 7–12: pipeline completo, editor, refino, histórico e endurecimento
 
 Implementadas as Etapas 7 a 12 numa única sessão (a pedido), fechando o MVP. Fluxo ponta a ponta: captura → consentimento → geração via Gemini → edição/refino → histórico → export `.md`.

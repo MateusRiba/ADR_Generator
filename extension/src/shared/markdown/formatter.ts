@@ -6,7 +6,11 @@
 
 import type { AdrJson } from "../gemini/types";
 
-export function toMarkdown(adr: AdrJson, savedAt: Date = new Date()): string {
+export function toMarkdown(
+  adr: AdrJson,
+  savedAt: Date = new Date(),
+  version = "0.0.0",
+): string {
   const date = savedAt.toISOString().slice(0, 10);
   const title = escapeYamlString(adr.titulo);
   const alternativas = bulletList(adr.alternativas);
@@ -17,6 +21,8 @@ export function toMarkdown(adr: AdrJson, savedAt: Date = new Date()): string {
 title: "${title}"
 date: ${date}
 ai_generated: true
+gerado_por: adr_generator_v${version}
+revisado: false
 ---
 
 # ${adr.titulo}

@@ -121,3 +121,8 @@ export async function updateAdr(
 export async function deleteAdr(id: string): Promise<void> {
   await withStore("readwrite", (store) => awaitReq(store.delete(id)));
 }
+
+/** Apaga TODOS os ADRs salvos (reset total — T-PRIV-04). */
+export async function clearAllAdrs(): Promise<void> {
+  await withStore("readwrite", (store) => awaitReq(store.clear()));
+}

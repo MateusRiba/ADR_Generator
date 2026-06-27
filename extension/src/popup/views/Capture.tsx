@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { sendMessage } from "../../shared/runtime/messaging";
 import type { AdrRecord } from "../../shared/storage/adrs";
+import { TRANSCRIPT_CAP } from "../../shared/config";
 
 interface CaptureProps {
   apiKeyReady: boolean | null;
@@ -10,11 +11,15 @@ interface CaptureProps {
 export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
   const [capturing, setCapturing] = useState(false);
   const [charCount, setCharCount] = useState(0);
+  const [truncated, setTruncated] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Modo redação (P2): transcrição carregada para revisão/edição antes do envio.
+  // `null` = usuário ainda não abriu a revisão → geração usa o buffer do SW.
+  const [transcript, setTranscript] = useState<string | null>(null);
 
   const refreshState = useCallback(async () => {
     try {
@@ -22,6 +27,7 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
       if (r.type === "CAPTURE_STATE") {
         setCapturing(r.capturing);
         setCharCount(r.charCount);
+        setTruncated(r.truncated);
       }
     } catch {
       /* SW ainda subindo: ignora */
@@ -36,14 +42,28 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         raw !== null &&
         (raw as { type?: unknown }).type === "CAPTURE_STATE"
       ) {
-        const msg = raw as { capturing: boolean; charCount: number };
+        const msg = raw as {
+          capturing: boolean;
+          charCount: number;
+          truncated: boolean;
+        };
         setCapturing(msg.capturing);
         setCharCount(msg.charCount);
+        setTruncated(msg.truncated);
       }
     };
     chrome.runtime.onMessage.addListener(listener);
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [refreshState]);
+
+  async function openReview() {
+    try {
+      const r = await sendMessage({ type: "GET_TRANSCRIPT" });
+      if (r.type === "TRANSCRIPT_TEXT") setTranscript(r.text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }
 
   async function confirmStart() {
     if (!consentChecked) return;
@@ -82,6 +102,8 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
       if (r.type === "CAPTURE_STATE") {
         setCapturing(r.capturing);
         setCharCount(r.charCount);
+        setTruncated(r.truncated);
+        setTranscript(null);
       }
     } finally {
       setBusy(false);
@@ -92,9 +114,16 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
     setError(null);
     setGenerating(true);
     try {
-      const r = await sendMessage({ type: "GENERATE_ADR" });
+      // Se o usuário revisou, envia o texto editado (trechos removidos não saem,
+      // P2); senão, omite e o SW usa o buffer bruto.
+      const r = await sendMessage(
+        transcript !== null
+          ? { type: "GENERATE_ADR", transcript }
+          : { type: "GENERATE_ADR" },
+      );
       if (r.type === "ADR_SAVED") {
         setCharCount(0);
+        setTranscript(null);
         onGenerated(r.record);
       } else if (r.type === "ERROR") {
         setError(r.message);
@@ -143,6 +172,30 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         </button>
       ) : charCount > 0 ? (
         <>
+          <details
+            className="capture__review"
+            onToggle={(e) => {
+              if ((e.target as HTMLDetailsElement).open && transcript === null) {
+                void openReview();
+              }
+            }}
+          >
+            <summary>Revisar transcrição antes de enviar</summary>
+            <p className="popup__hint popup__hint--muted">
+              Remova trechos sensíveis antes de gerar — o que você apagar aqui
+              não é enviado ao Gemini.
+            </p>
+            {transcript === null ? (
+              <p className="popup__hint popup__hint--muted">Carregando…</p>
+            ) : (
+              <textarea
+                className="field__textarea"
+                rows={8}
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+              />
+            )}
+          </details>
           <button
             className="popup__button popup__button--primary"
             type="button"
@@ -173,6 +226,16 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         >
           Iniciar captura
         </button>
+      )}
+
+      {truncated && (
+        <div className="popup__notice popup__notice--warn">
+          <p>
+            Limite de {TRANSCRIPT_CAP.toLocaleString("pt-BR")} caracteres
+            atingido — o trecho excedente foi descartado e não será enviado ao
+            Gemini.
+          </p>
+        </div>
       )}
 
       <p className="popup__hint popup__hint--muted">

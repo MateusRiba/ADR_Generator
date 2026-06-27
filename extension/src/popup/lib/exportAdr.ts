@@ -4,7 +4,8 @@ import type { AdrJson } from "../../shared/gemini/types";
 import { toMarkdown } from "../../shared/markdown/formatter";
 
 export function downloadAdrMarkdown(adr: AdrJson, savedAt?: Date): void {
-  const md = toMarkdown(adr, savedAt);
+  const { version } = chrome.runtime.getManifest();
+  const md = toMarkdown(adr, savedAt, version);
   const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");

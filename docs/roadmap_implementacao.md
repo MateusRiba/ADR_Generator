@@ -2,7 +2,7 @@
 
 Este documento é o plano-mestre de implementação da extensão (após as fases de Exposição e Composição do Sinfonia). Está dividido em **12 etapas independentes**, cada uma terminando com uma saída testável manualmente. Cada etapa equivale a uma sessão de desenvolvimento.
 
-**Status atual:** Etapas 1–5 concluídas em 2026-05-27; Etapas 6–12 concluídas em 2026-06-16. **MVP completo.** Próximo ciclo: fase de Ressonância (medição de impacto, escalabilidade, feedback). Validação manual no Chrome pendente pelo usuário.
+**Status atual:** Etapas 1–5 concluídas em 2026-05-27; Etapas 6–12 concluídas em 2026-06-16. **MVP completo.** Passo de endurecimento pós-MVP em 2026-06-27 (settings embutidas no popup; injeção sob demanda do content script; e fechamento de mitigações pendentes — gate F1 `T-FUNC-07`, modo redação P2 `T-FUNC-08`, retry/backoff `T-ROB-04`, reset total `T-PRIV-04`, aviso de cap `T-IA-05`, badge de gravação `T-UX-03`, front-matter `T-FUNC-06`; ver `log.md`). Próximo ciclo: fase de Ressonância (medição de impacto, escalabilidade, feedback). Validação manual no Chrome pendente pelo usuário.
 
 ## Stack Decidida (vale para todas as etapas)
 
