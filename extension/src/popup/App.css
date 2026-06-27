@@ -201,6 +201,22 @@ body {
   border-bottom-color: #1976d2;
 }
 
+.tabs__btn--icon {
+  flex: none;
+  width: 32px;
+  padding: 6px 0;
+  font-size: 14px;
+  opacity: 0.45;
+}
+
+.tabs__btn--icon:hover {
+  opacity: 0.8;
+}
+
+.tabs__btn--icon.tabs__btn--active {
+  opacity: 1;
+}
+
 .tabs__btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
@@ -491,4 +507,21 @@ body {
 .popup__button--sm {
   padding: 3px 8px;
   font-size: 11px;
+}
+
+/* ── Configurações ────────────────────────────────────────────────────── */
+.options__badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.options__badge--ok {
+  color: #2e7d32;
+}
+
+.options__badge--warn {
+  color: #b26a00;
 }

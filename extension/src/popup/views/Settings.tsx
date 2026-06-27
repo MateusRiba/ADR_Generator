@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import "./App.css";
-import {
-  clearApiKey,
-  isApiKeySet,
-  setApiKey,
-} from "../shared/storage/apiKey";
+import { clearApiKey, isApiKeySet, setApiKey } from "../../shared/storage/apiKey";
 
 type Status = "loading" | "configured" | "absent";
 
-export function App() {
+export function Settings({
+  onChanged,
+}: {
+  onChanged?: (configured: boolean) => void;
+}) {
   const [status, setStatus] = useState<Status>("loading");
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
@@ -23,9 +22,11 @@ export function App() {
     try {
       const present = await isApiKeySet();
       setStatus(present ? "configured" : "absent");
+      onChanged?.(present);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setStatus("absent");
+      onChanged?.(false);
     }
   }
 
@@ -66,9 +67,8 @@ export function App() {
   }
 
   return (
-    <main className="options">
-      <header className="options__header">
-        <h1 className="options__title">ADR Generator — Configurações</h1>
+    <section className="view">
+      <div className="capture__status">
         <span
           className={
             status === "configured"
@@ -79,18 +79,18 @@ export function App() {
           {status === "loading"
             ? "Verificando..."
             : status === "configured"
-              ? "Configurada"
+              ? "Chave configurada"
               : "Não configurada"}
         </span>
-      </header>
+      </div>
 
-      <section className="options__section">
-        <label className="options__label" htmlFor="api-key">
+      <div className="field">
+        <label className="field__label" htmlFor="api-key">
           Chave da Gemini API
         </label>
         <input
           id="api-key"
-          className="options__input"
+          className="history__search"
           type="password"
           autoComplete="off"
           spellCheck={false}
@@ -103,9 +103,9 @@ export function App() {
           onChange={(event) => setDraft(event.target.value)}
           disabled={saving}
         />
-        <div className="options__actions">
+        <div className="popup__actions">
           <button
-            className="options__button options__button--primary"
+            className="popup__button popup__button--primary"
             type="button"
             onClick={handleSave}
             disabled={saving || draft.length === 0}
@@ -113,7 +113,7 @@ export function App() {
             {saving ? "Salvando..." : "Salvar"}
           </button>
           <button
-            className="options__button"
+            className="popup__button"
             type="button"
             onClick={handleForget}
             disabled={saving || status !== "configured"}
@@ -122,14 +122,14 @@ export function App() {
           </button>
         </div>
         {feedback && (
-          <p className="options__status options__status--ok">{feedback}</p>
+          <p className="popup__status popup__status--ok">{feedback}</p>
         )}
         {error && (
-          <p className="options__status options__status--error">{error}</p>
+          <p className="popup__status popup__status--error">{error}</p>
         )}
-      </section>
+      </div>
 
-      <section className="options__notice">
+      <div className="popup__notice">
         <strong>Por que a chave some?</strong>
         <p>
           Ela fica em <code>chrome.storage.session</code>, que é volátil: a
@@ -137,7 +137,7 @@ export function App() {
           gravar em disco, mas você precisa re-colá-la a cada sessão do
           navegador.
         </p>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }

@@ -5,8 +5,9 @@ import type { AdrRecord } from "../shared/storage/adrs";
 import { Capture } from "./views/Capture";
 import { Editor } from "./views/Editor";
 import { History } from "./views/History";
+import { Settings } from "./views/Settings";
 
-type View = "capture" | "editor" | "history";
+type View = "capture" | "editor" | "history" | "settings";
 
 export function App() {
   const { version } = chrome.runtime.getManifest();
@@ -56,15 +57,24 @@ export function App() {
         >
           Histórico
         </button>
+        <button
+          type="button"
+          className={`tabs__btn tabs__btn--icon ${view === "settings" ? "tabs__btn--active" : ""}`}
+          onClick={() => setView("settings")}
+          title="Configurações"
+          aria-label="Configurações"
+        >
+          ⚙
+        </button>
       </nav>
 
-      {apiKeyReady === false && (
+      {apiKeyReady === false && view !== "settings" && (
         <div className="popup__notice popup__notice--warn">
           <p>API key da Gemini não configurada nesta sessão.</p>
           <button
             type="button"
             className="popup__button popup__button--link"
-            onClick={() => chrome.runtime.openOptionsPage()}
+            onClick={() => setView("settings")}
           >
             Abrir configurações
           </button>
@@ -81,6 +91,7 @@ export function App() {
           <p className="popup__hint">Nenhum ADR aberto.</p>
         ))}
       {view === "history" && <History onOpen={openEditor} />}
+      {view === "settings" && <Settings onChanged={setApiKeyReady} />}
     </main>
   );
 }

@@ -64,17 +64,49 @@ async function resetBuffer(): Promise<void> {
 }
 
 // ── Meeting Controller (roteia comandos para a aba do Meet) ───────────────────
+type RouteResult = "ok" | "no-tab" | "no-content-script";
+
+/**
+ * Injeta o content script sob demanda na aba do Meet. Necessário porque o Chrome
+ * NÃO injeta `content_scripts` declarativos em abas que já estavam abertas quando
+ * a extensão é (re)carregada — cenário comum em dev (`npm run dev` recarrega a
+ * extensão a cada save). Lê os arquivos emitidos do próprio manifest, então
+ * funciona tanto no build quanto no dev sem hardcode de nomes com hash.
+ */
+async function injectContentScript(tabId: number): Promise<boolean> {
+  const files = (chrome.runtime.getManifest().content_scripts ?? []).flatMap(
+    (cs) => cs.js ?? [],
+  );
+  if (files.length === 0) return false;
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, files });
+    return true;
+  } catch (err) {
+    console.error("[SW] falha ao injetar content script", err);
+    return false;
+  }
+}
+
 async function routeToMeetTab(
   message: { type: "START_CAPTURE" | "STOP_CAPTURE" },
-): Promise<boolean> {
+): Promise<RouteResult> {
   const tabs = await chrome.tabs.query({ url: "https://meet.google.com/*" });
   const target = tabs.find((t) => t.active) ?? tabs[0];
-  if (!target?.id) return false;
+  if (!target?.id) return "no-tab";
   try {
     await chrome.tabs.sendMessage(target.id, message);
-    return true;
+    return "ok";
   } catch {
-    return false; // content script ainda não injetado / aba sem reunião
+    // Content script ausente (aba aberta antes da extensão carregar). Injeta e
+    // tenta uma vez mais.
+    const injected = await injectContentScript(target.id);
+    if (!injected) return "no-content-script";
+    try {
+      await chrome.tabs.sendMessage(target.id, message);
+      return "ok";
+    } catch {
+      return "no-content-script";
+    }
   }
 }
 
@@ -97,10 +129,13 @@ onMessage(async (msg) => {
     case "START_CAPTURE": {
       await ensureRestored();
       const routed = await routeToMeetTab({ type: "START_CAPTURE" });
-      if (!routed) {
+      if (routed !== "ok") {
         return {
           type: "ERROR",
-          message: "Nenhuma aba do Google Meet ativa para capturar.",
+          message:
+            routed === "no-tab"
+              ? "Nenhuma aba do Google Meet aberta. Entre em uma reunião e tente de novo."
+              : "Não consegui conectar à aba do Meet. Recarregue a página da reunião (F5) e tente novamente.",
         };
       }
       capturing = true;
