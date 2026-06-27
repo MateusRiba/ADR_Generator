@@ -25,6 +25,9 @@ export type RuntimeMessage =
       charCount: number;
       truncated: boolean;
     }
+  // Cap de 30K atingido: SW → content script (via tabs.sendMessage) para o
+  // overlay avisar que novas falas não entram mais no ADR (C2 / T-IA-05).
+  | { type: "CAPTURE_TRUNCATED" }
   // Modo redação (P2): popup busca o buffer para o usuário revisar/editar antes
   // de enviar à Gemini. Trechos removidos não chegam à API.
   | { type: "GET_TRANSCRIPT" }

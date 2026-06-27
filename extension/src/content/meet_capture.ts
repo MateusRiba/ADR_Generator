@@ -17,6 +17,13 @@
 
 import type { RuntimeMessage } from "../shared/types/messages";
 import { CAPTION_DEBOUNCE_MS } from "../shared/config";
+import {
+  showOverlay,
+  hideOverlay,
+  pushLine,
+  setWaitingForCaptions,
+  setTruncated,
+} from "./recording_overlay";
 
 // Âncoras do contêiner de legendas. aria-label varia com o idioma da UI do Meet.
 const CONTAINER_SELECTORS = [
@@ -73,6 +80,8 @@ function flushCaptions(): void {
   const delta = newPortion(emittedTail, current).trim();
   if (!delta) return;
   emittedTail = (emittedTail + " " + delta).slice(-400); // janela de costura
+  setWaitingForCaptions(false);
+  pushLine(delta);
   send({ type: "TRANSCRIPT_CHUNK", text: delta });
 }
 
@@ -96,6 +105,14 @@ function startCapture(): void {
   capturing = true;
   emittedTail = "";
 
+  // Box de preview visível na página: sinaliza que está gravando mesmo com o popup
+  // fechado. O botão "Encerrar" do box passa por confirmação e dispara STOP_CAPTURE
+  // ao SW (fonte única da verdade), que ecoa de volta e roda stopCapture() → hideOverlay().
+  showOverlay({
+    startedAt: Date.now(),
+    onStop: () => send({ type: "STOP_CAPTURE" }),
+  });
+
   const container = findContainer();
   if (container) {
     attachObserver(container);
@@ -104,11 +121,13 @@ function startCapture(): void {
 
   // Legendas ainda não ligadas: espera o contêiner aparecer no DOM.
   console.log("[content] legendas não encontradas — aguardando o usuário ativar (CC)");
+  setWaitingForCaptions(true);
   bodyObserver = new MutationObserver(() => {
     const found = findContainer();
     if (found) {
       bodyObserver?.disconnect();
       bodyObserver = null;
+      setWaitingForCaptions(false);
       if (capturing) attachObserver(found);
     }
   });
@@ -126,6 +145,7 @@ function stopCapture(): void {
     clearTimeout(debounceTimer);
     debounceTimer = null;
   }
+  hideOverlay();
   console.log("[content] captura parada");
 }
 
@@ -134,6 +154,7 @@ chrome.runtime.onMessage.addListener((raw: unknown) => {
   const msg = raw as RuntimeMessage;
   if (msg.type === "START_CAPTURE") startCapture();
   else if (msg.type === "STOP_CAPTURE") stopCapture();
+  else if (msg.type === "CAPTURE_TRUNCATED") setTruncated(true);
 });
 
 console.log("[content] meet_capture pronto em", location.href);

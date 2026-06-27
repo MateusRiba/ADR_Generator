@@ -70,9 +70,14 @@ function broadcastState(): void {
 async function appendChunk(text: string): Promise<void> {
   await ensureRestored();
   if (buffer.length >= TRANSCRIPT_CAP) {
-    truncated = true; // cap atingido: ignora o resto e avisa a UI
-    broadcastState();
-    return;
+    if (!truncated) {
+      // Transição para truncado: avisa o popup (CAPTURE_STATE) e o overlay na
+      // aba do Meet (CAPTURE_TRUNCATED) uma única vez.
+      truncated = true;
+      broadcastState();
+      void notifyMeetTabTruncated();
+    }
+    return; // cap atingido: ignora o resto da fala
   }
   const addition = buffer ? ` ${text}` : text;
   buffer = (buffer + addition).slice(0, TRANSCRIPT_CAP);
@@ -116,6 +121,40 @@ async function injectContentScript(tabId: number): Promise<boolean> {
   }
 }
 
+/**
+ * Tenta entregar a mensagem ao content script, com retentativas. Necessário logo
+ * após `injectContentScript`: o crxjs injeta um *loader* que carrega o script real
+ * por `import()` ASSÍNCRONO — quando `executeScript` resolve, o listener
+ * `chrome.runtime.onMessage` ainda não foi registrado. Sem o backoff, a primeira
+ * `sendMessage` chega antes do listener existir e a entrega falha (corrida).
+ */
+async function sendWithRetry(
+  tabId: number,
+  message: { type: "START_CAPTURE" | "STOP_CAPTURE" },
+  tries = 6,
+  delayMs = 120,
+): Promise<boolean> {
+  for (let i = 0; i < tries; i++) {
+    try {
+      await chrome.tabs.sendMessage(tabId, message);
+      return true;
+    } catch {
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  return false;
+}
+
+/** Avisa o overlay da aba do Meet que o cap foi atingido (best-effort, C2). */
+async function notifyMeetTabTruncated(): Promise<void> {
+  const tabs = await chrome.tabs.query({ url: "https://meet.google.com/*" });
+  const target = tabs.find((t) => t.active) ?? tabs[0];
+  if (!target?.id) return;
+  await chrome.tabs
+    .sendMessage(target.id, { type: "CAPTURE_TRUNCATED" })
+    .catch(() => {}); // content script já está rodando (envia chunks); ignora falha
+}
+
 async function routeToMeetTab(
   message: { type: "START_CAPTURE" | "STOP_CAPTURE" },
 ): Promise<RouteResult> {
@@ -127,15 +166,11 @@ async function routeToMeetTab(
     return "ok";
   } catch {
     // Content script ausente (aba aberta antes da extensão carregar). Injeta e
-    // tenta uma vez mais.
+    // retenta com backoff até o loader crxjs terminar o import() e registrar o
+    // listener.
     const injected = await injectContentScript(target.id);
     if (!injected) return "no-content-script";
-    try {
-      await chrome.tabs.sendMessage(target.id, message);
-      return "ok";
-    } catch {
-      return "no-content-script";
-    }
+    return (await sendWithRetry(target.id, message)) ? "ok" : "no-content-script";
   }
 }
 
@@ -289,6 +324,7 @@ onMessage(async (msg) => {
     // ── Mensagens de resposta (não tratadas no SW) ──────────────────────────
     case "PONG":
     case "CAPTURE_STATE":
+    case "CAPTURE_TRUNCATED":
     case "TRANSCRIPT_TEXT":
     case "ADR_SAVED":
     case "ADRS_LIST":
