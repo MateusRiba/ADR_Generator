@@ -33,6 +33,13 @@ let lastPersistAt = 0;
 let restored = false;
 // Sinaliza que o cap de 30K foi atingido e parte da fala foi descartada (T-IA-05).
 let truncated = false;
+// Guarda contra "encerrar duas vezes": ao parar, o content script faz um flush
+// final que chega como TRANSCRIPT_CHUNK logo após o STOP. Dentro desta janela o
+// chunk é anexado (STOP, preserva as últimas palavras) ou ignorado (DISCARD), mas
+// NÃO reativa `capturing` — senão o popup/badge voltariam para "gravando".
+let lastStopAt = 0;
+let discardingUntil = 0;
+const STOP_GUARD_MS = 1500;
 
 /** Liga/desliga o ponto vermelho de "gravando" no ícone da extensão (T-UX-03). */
 function setRecordingBadge(on: boolean): void {
@@ -210,6 +217,7 @@ onMessage(async (msg) => {
     case "STOP_CAPTURE": {
       await ensureRestored();
       capturing = false;
+      lastStopAt = Date.now();
       setRecordingBadge(false);
       await routeToMeetTab({ type: "STOP_CAPTURE" });
       await persistBuffer();
@@ -221,16 +229,22 @@ onMessage(async (msg) => {
       return captureState();
     }
     case "DISCARD_TRANSCRIPT": {
+      lastStopAt = Date.now();
+      discardingUntil = Date.now() + STOP_GUARD_MS; // ignora o flush final
       await routeToMeetTab({ type: "STOP_CAPTURE" });
       await resetBuffer();
       console.log("[SW] transcrição descartada");
       return captureState();
     }
     case "TRANSCRIPT_CHUNK": {
-      // Chunk chegando reidrata `capturing` mesmo após reciclagem do SW.
-      capturing = true;
-      setRecordingBadge(true);
+      if (Date.now() < discardingUntil) return; // flush final pós-descarte: ignora
       await appendChunk(msg.text);
+      // Reidrata `capturing` após reciclo do SW, mas NÃO logo após um STOP — senão
+      // o flush final da parada reativaria a captura ("encerrar duas vezes").
+      if (Date.now() - lastStopAt > STOP_GUARD_MS) {
+        capturing = true;
+        setRecordingBadge(true);
+      }
       return;
     }
     case "GET_CAPTURE_STATE": {
