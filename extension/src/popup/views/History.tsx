@@ -78,11 +78,26 @@ export function History({ onOpen }: HistoryProps) {
                 </span>
               </button>
               <div className="history__actions">
+                {!record.reviewed && (
+                  <span className="history__badge" title="Revise no editor antes de exportar">
+                    não revisado
+                  </span>
+                )}
                 <button
                   type="button"
                   className="popup__button popup__button--sm"
                   onClick={() =>
-                    downloadAdrMarkdown(record.content, new Date(record.updatedAt))
+                    downloadAdrMarkdown(
+                      record.content,
+                      new Date(record.updatedAt),
+                      record.reviewed,
+                    )
+                  }
+                  disabled={!record.reviewed}
+                  title={
+                    record.reviewed
+                      ? "Exportar como Markdown"
+                      : "Revise no editor antes de exportar"
                   }
                 >
                   .md

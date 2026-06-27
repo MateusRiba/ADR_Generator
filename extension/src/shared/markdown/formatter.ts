@@ -10,6 +10,7 @@ export function toMarkdown(
   adr: AdrJson,
   savedAt: Date = new Date(),
   version = "0.0.0",
+  reviewed = false,
 ): string {
   const date = savedAt.toISOString().slice(0, 10);
   const title = escapeYamlString(adr.titulo);
@@ -22,7 +23,7 @@ title: "${title}"
 date: ${date}
 ai_generated: true
 gerado_por: adr_generator_v${version}
-revisado: false
+revisado: ${reviewed}
 ---
 
 # ${adr.titulo}

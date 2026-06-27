@@ -15,11 +15,14 @@ export interface AdrRecord {
   content: AdrJson;
   createdAt: number;
   updatedAt: number;
+  /** Revisado pelo usuário (libera o export — F1). Registros antigos: undefined → false. */
+  reviewed: boolean;
 }
 
 export interface AdrPatch {
   title?: string;
   content?: AdrJson;
+  reviewed?: boolean;
 }
 
 function openDb(): Promise<IDBDatabase> {
@@ -66,6 +69,7 @@ export async function saveAdr(adr: AdrJson): Promise<AdrRecord> {
     content: adr,
     createdAt: now,
     updatedAt: now,
+    reviewed: false, // ADR recém-gerado por IA: exige revisão antes do export (F1)
   };
   await withStore("readwrite", (store) => awaitReq(store.add(record)));
   return record;
@@ -111,6 +115,7 @@ export async function updateAdr(
       ...existing,
       ...(patch.content ? { content: patch.content } : {}),
       title: patch.title ?? patch.content?.titulo ?? existing.title,
+      reviewed: patch.reviewed ?? existing.reviewed ?? false,
       updatedAt: Date.now(),
     };
     await awaitReq(store.put(next));

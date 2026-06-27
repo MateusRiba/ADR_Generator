@@ -32,9 +32,9 @@ export function Editor({ record, onSaved }: EditorProps) {
   const [refineField, setRefineField] = useState<AdrFieldKey | null>(null);
   const [refineInstruction, setRefineInstruction] = useState("");
   const [refiningField, setRefiningField] = useState<AdrFieldKey | null>(null);
-  // F1 (T-FUNC-07): export só libera após o usuário revisar a Decisão — editando
-  // o campo ou marcando o checkbox. Em memória, re-exige a cada ADR aberto.
-  const [decisaoReviewed, setDecisaoReviewed] = useState(false);
+  // F1/T1: revisão persistida no registro. Libera o export (aqui e no Histórico)
+  // e vira `revisado: true` no front-matter. Só o botão explícito marca.
+  const [reviewed, setReviewed] = useState(record.reviewed ?? false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Recarrega quando o registro ativo muda (ex.: abriu outro ADR do histórico).
@@ -42,9 +42,9 @@ export function Editor({ record, onSaved }: EditorProps) {
     setAdr(record.content);
   }, [record.id, record.content]);
 
-  // Reset da revisão só quando troca o ADR (não a cada autosave do mesmo).
+  // Sincroniza o flag de revisão ao trocar de ADR (não a cada autosave do mesmo).
   useEffect(() => {
-    setDecisaoReviewed(false);
+    setReviewed(record.reviewed ?? false);
   }, [record.id]);
 
   function persist(next: AdrJson) {
@@ -75,7 +75,31 @@ export function Editor({ record, onSaved }: EditorProps) {
     const next = { ...adr, [field]: value } as AdrJson;
     setAdr(next);
     persist(next);
-    if (field === "decisao") setDecisaoReviewed(true); // editar = revisar (F1)
+  }
+
+  // Marca/desmarca a revisão. Persiste junto o conteúdo atual (flush das edições
+  // pendentes) para que o registro fique coerente em uma única gravação.
+  async function markReviewed(value: boolean) {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    setError(null);
+    setReviewed(value);
+    try {
+      const r = await sendMessage({
+        type: "UPDATE_ADR",
+        id: record.id,
+        patch: { content: adr, title: adr.titulo, reviewed: value },
+      });
+      if (r.type === "ADR_SAVED") {
+        setSavedTick("saved");
+        onSaved(r.record);
+      } else if (r.type === "ERROR") {
+        setError(r.message);
+        setReviewed(!value); // reverte o otimismo em caso de falha
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setReviewed(!value);
+    }
   }
 
   async function runRefine() {
@@ -106,6 +130,30 @@ export function Editor({ record, onSaved }: EditorProps) {
 
   return (
     <section className="view">
+      {reviewed ? (
+        <div className="editor__banner editor__banner--ok">
+          <span>✓ Revisado — gerado por IA.</span>
+          <button
+            type="button"
+            className="popup__button popup__button--link"
+            onClick={() => markReviewed(false)}
+          >
+            desfazer
+          </button>
+        </div>
+      ) : (
+        <div className="editor__banner editor__banner--warn">
+          <span>⚠ Gerado por IA — revise a decisão antes de exportar.</span>
+          <button
+            type="button"
+            className="popup__button popup__button--sm"
+            onClick={() => markReviewed(true)}
+          >
+            Marcar como revisado
+          </button>
+        </div>
+      )}
+
       <div className="editor__bar">
         <span className="editor__save">
           {savedTick === "saving" ? "Salvando…" : savedTick === "saved" ? "Salvo ✓" : ""}
@@ -113,12 +161,12 @@ export function Editor({ record, onSaved }: EditorProps) {
         <button
           type="button"
           className="popup__button"
-          onClick={() => downloadAdrMarkdown(adr, new Date(record.updatedAt))}
-          disabled={!decisaoReviewed}
+          onClick={() => downloadAdrMarkdown(adr, new Date(record.updatedAt), reviewed)}
+          disabled={!reviewed}
           title={
-            decisaoReviewed
+            reviewed
               ? "Exportar como Markdown"
-              : "Revise a decisão antes de exportar"
+              : "Marque como revisado antes de exportar"
           }
         >
           Exportar .md
@@ -126,28 +174,17 @@ export function Editor({ record, onSaved }: EditorProps) {
       </div>
 
       {VISIBLE_FIELDS.map((field) => (
-        <div key={field}>
-          <AdrField
-            label={ADR_FIELD_LABELS[field]}
-            value={adr[field]}
-            onChange={(v) => updateField(field, v)}
-            onRefine={() => {
-              setRefineField(field);
-              setRefineInstruction("");
-            }}
-            refining={refiningField === field}
-          />
-          {field === "decisao" && (
-            <label className="modal__check editor__review">
-              <input
-                type="checkbox"
-                checked={decisaoReviewed}
-                onChange={(e) => setDecisaoReviewed(e.target.checked)}
-              />
-              Revisei a decisão (obrigatório para exportar).
-            </label>
-          )}
-        </div>
+        <AdrField
+          key={field}
+          label={ADR_FIELD_LABELS[field]}
+          value={adr[field]}
+          onChange={(v) => updateField(field, v)}
+          onRefine={() => {
+            setRefineField(field);
+            setRefineInstruction("");
+          }}
+          refining={refiningField === field}
+        />
       ))}
 
       <details className="editor__cot">
