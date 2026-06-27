@@ -20,6 +20,19 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
   // Modo redação (P2): transcrição carregada para revisão/edição antes do envio.
   // `null` = usuário ainda não abriu a revisão → geração usa o buffer do SW.
   const [transcript, setTranscript] = useState<string | null>(null);
+  // Abre/fecha a seção de revisão. Auto-abre quando a captura para com conteúdo
+  // pendente (resposta "Só no popup": ao encerrar — inclusive pelo box no Meet —
+  // a revisão da transcrição aparece automaticamente).
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  const openReview = useCallback(async () => {
+    try {
+      const r = await sendMessage({ type: "GET_TRANSCRIPT" });
+      if (r.type === "TRANSCRIPT_TEXT") setTranscript(r.text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }, []);
 
   const refreshState = useCallback(async () => {
     try {
@@ -56,14 +69,16 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [refreshState]);
 
-  async function openReview() {
-    try {
-      const r = await sendMessage({ type: "GET_TRANSCRIPT" });
-      if (r.type === "TRANSCRIPT_TEXT") setTranscript(r.text);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+  // Captura parada com transcrição pendente → abre a revisão e carrega o texto uma
+  // vez. Dispara tanto no Stop pelo popup quanto pelo overlay no Meet (o SW agora
+  // faz broadcast do CAPTURE_STATE em ambos). Não reabre se o usuário fechou (guard
+  // por `transcript === null`).
+  useEffect(() => {
+    if (!capturing && charCount > 0 && transcript === null) {
+      setReviewOpen(true);
+      void openReview();
     }
-  }
+  }, [capturing, charCount, transcript, openReview]);
 
   async function confirmStart() {
     if (!consentChecked) return;
@@ -104,6 +119,7 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         setCharCount(r.charCount);
         setTruncated(r.truncated);
         setTranscript(null);
+        setReviewOpen(false);
       }
     } finally {
       setBusy(false);
@@ -124,6 +140,7 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
       if (r.type === "ADR_SAVED") {
         setCharCount(0);
         setTranscript(null);
+        setReviewOpen(false);
         onGenerated(r.record);
       } else if (r.type === "ERROR") {
         setError(r.message);
@@ -174,10 +191,11 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         <>
           <details
             className="capture__review"
+            open={reviewOpen}
             onToggle={(e) => {
-              if ((e.target as HTMLDetailsElement).open && transcript === null) {
-                void openReview();
-              }
+              const open = (e.target as HTMLDetailsElement).open;
+              setReviewOpen(open);
+              if (open && transcript === null) void openReview();
             }}
           >
             <summary>Revisar transcrição antes de enviar</summary>

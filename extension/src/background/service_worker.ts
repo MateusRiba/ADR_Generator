@@ -213,6 +213,10 @@ onMessage(async (msg) => {
       setRecordingBadge(false);
       await routeToMeetTab({ type: "STOP_CAPTURE" });
       await persistBuffer();
+      // Empurra o estado ao popup (se aberto): STOP pode vir do overlay na aba do
+      // Meet, cujo `return` vai para o content script — sem este broadcast o popup
+      // ficaria preso em "Capturando…".
+      broadcastState();
       console.log("[SW] captura parada, buffer persistido:", buffer.length);
       return captureState();
     }
