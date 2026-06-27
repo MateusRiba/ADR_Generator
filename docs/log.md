@@ -7,6 +7,24 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-27] decision | Readequa Ressonancia para validacao academica controlada
+
+Os 3 artefatos da fase **04 — Ressonancia** foram revisados para refletir o contexto real do projeto: trabalho simples de faculdade, sem grupo piloto, sem sponsor, sem operacao multi-equipe e sem necessidade de metricas longitudinais. A decisao substitui o enquadramento anterior de "piloto interno" por **validacao academica controlada**.
+
+- **`canvas_metricas_escala_impacto.md`** agora mede utilidade demonstravel do MVP: fluxo ponta-a-ponta, qualidade estrutural do ADR, fidelidade da decisao, comparacao tempo manual vs. extensao, privacidade e desempenho aceitavel em cenarios controlados. Foram removidos/rebaixados indicadores de adocao, CSAT, equipes ativas, pivot/persevere e telemetria continua.
+- **`canvas_planejamento_escalabilidade.md`** deixou de projetar crescimento de produto e passou a documentar limites arquiteturais: zero-backend suficiente para a faculdade, custo pontual via BYOK, cap de 30K, dependencia da Gemini/Meet e backend colaborativo como trabalho futuro fora de escopo.
+- **`painel_feedback_insights.md`** passou de painel de feedback de usuarios/pilotos para painel de evidencias academicas: demo, autoavaliacao, exports `.md`, relatorio de teste e observacoes de professor/banca.
+
+Atualizados `docs/README.md` e `docs/04_ressonancia/README.md` para marcar a fase como **v1 (validacao academica)**. As pendencias remanescentes sao executaveis sem grupo piloto: rodar 2 ou 3 cenarios controlados, registrar exports/tempos/observacoes e fechar uma conclusao honesta sobre limites e trabalhos futuros.
+
+Complemento: o `painel_feedback_insights.md` foi conferido contra o template oficial `Feedback_and_Insights_Panel_Model_Canvas_Template.md` do repositorio `assertlab/sinfonia` e mantido no formato de 5 secoes: objetivo do ciclo, fontes/metodos, feedbacks brutos, insights e acoes recomendadas. As pendencias e referencias ficaram incorporadas a essas secoes para evitar um artefato maior que o necessario.
+
+Complemento 2: `canvas_metricas_escala_impacto.md` e `canvas_planejamento_escalabilidade.md` tambem foram conferidos contra os templates oficiais `Scale_and_Impact_Metrics_Model_Canvas_Template.md` e `Scalability_Planning_Model_Canvas_Template.md`. Ambos preservam a adaptacao academica, mas agora mantem apenas as secoes previstas pelos templates: 10 secoes no canvas de metricas e 8 secoes no canvas de escalabilidade. Pendencias e referencias foram incorporadas nas secoes finais correspondentes.
+
+Complemento 3: os artefatos de Ressonancia foram alimentados com os resultados ja existentes em `extension/reports/2026-06-27_test_run.md` e `extension/reports/evidence/2026-06-27/`. Com 23/23 testes aprovados e 6 exports versionados, agora ficam concluidos no escopo academico: fluxo ponta-a-ponta, qualidade estrutural minima, fidelidade da decisao em casos variados, prompt injection basico, ausencia de decisao, transparencia IA, privacidade e robustez do Service Worker. Permanecem pendentes apenas medicoes nao cobertas pelos reports: tempo manual vs. extensao, cap de 30K/transcricao longa, refinamento por secao e conclusao academica final. A ressalva de terminologia ("captura audio" vs. "legendas/transcricao") foi registrada como ajuste narrativo.
+
+---
+
 ## [2026-06-27] decision | GO para piloto interno após validação manual
 
 A rodada manual no Chrome fechou os gates obrigatórios da v0.1: FUNC/PRIV/SEG passaram em 100% dos casos aplicáveis ao piloto, os **7/7 riscos críticos** do checklist de IA foram validados e o `checklist_lancamento.md` mudou de NO-GO condicional para **GO para piloto interno**.

@@ -39,15 +39,15 @@ Métricas de impacto, planejamento de escalabilidade e painel de feedback.
 
 | Artefato | Status |
 |---|---|
-| [Canvas de Métricas de Escala e Impacto](./04_ressonancia/canvas_metricas_escala_impacto.md) | 🟡 v0 (pré-piloto) |
-| [Canvas de Planejamento de Escalabilidade](./04_ressonancia/canvas_planejamento_escalabilidade.md) | 🟡 v0 (pré-piloto) |
-| [Painel de Feedback e Insights](./04_ressonancia/painel_feedback_insights.md) | 🟡 v0 (pré-piloto) |
+| [Canvas de Métricas de Escala e Impacto](./04_ressonancia/canvas_metricas_escala_impacto.md) | ✅ v1 (validação acadêmica) |
+| [Canvas de Planejamento de Escalabilidade](./04_ressonancia/canvas_planejamento_escalabilidade.md) | ✅ v1 (limites arquiteturais) |
+| [Painel de Feedback e Insights](./04_ressonancia/painel_feedback_insights.md) | ✅ v1 (feedback acadêmico) |
 
 ---
 
 ## Estado Atual
 
-O projeto concluiu as fases de **Exposição** (01), **Composição** (02) e **Ensaio** (03 — Build & Test), com todos os artefatos prescritos pelo Sinfonia para essas fases preenchidos: Modelo C4, Intelligence Strategy Record, Checklist de Análise de Riscos de IA e Defensibilidade, Canvas de Testes e Validação e Checklist de Lançamento. A fase de **Ressonância** (04 — Measure & Learn) está em **v0 (hipóteses pré-piloto)**: os 3 artefatos (Métricas de Escala e Impacto, Planejamento de Escalabilidade, Painel de Feedback e Insights) já têm a estrutura conforme template, com as seções de método/definição preenchidas pela IA e as empíricas marcadas como pendentes. Por ser "Medir & Aprender", a fase só conclui com dados reais — destravados pelo **piloto interno** (gate em [`03_ensaio/checklist_lancamento.md`](./03_ensaio/checklist_lancamento.md) §5).
+O projeto concluiu as fases de **Exposição** (01), **Composição** (02), **Ensaio** (03 — Build & Test) e readequou a fase de **Ressonância** (04 — Measure & Learn) ao contexto real de um projeto simples de faculdade. Em vez de depender de piloto interno, sponsor, adoção por equipes ou métricas longitudinais, os 3 artefatos da Ressonância agora estão em **v1 (validação acadêmica controlada)**: a avaliação se apoia em cenários controlados, exports `.md`, comparação manual entre transcrição e ADR, relatório de teste e declaração explícita dos limites/trabalhos futuros.
 
 ## Log de Alimentação da Documentação
 

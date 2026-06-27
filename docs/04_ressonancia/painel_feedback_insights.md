@@ -1,98 +1,86 @@
 # Painel de Feedback e Insights
-## ADR Generator — Extensão para Google Meet (MVP)
+## ADR Generator — Extensao para Google Meet (MVP academico)
 
-> Artefato da fase **Ressonância** da metodologia [Sinfonia](https://github.com/assertlab/sinfonia), construído sobre o template `Feedback_and_Insights_Panel_Model_Canvas_Template.md` (5 seções: Objetivo do Ciclo de Feedback, Fontes e Métodos de Coleta, Principais Feedbacks Recebidos, Insights Gerados, Ações Recomendadas).
-> **Versão v0 (pré-piloto).** O **design do ciclo** (§1–§2) é consolidável agora; os **dados brutos** (§3) exigem rodar o piloto e conversar com usuários reais; **insights** (§4) e **ações** (§5) se preenchem a partir daí.
+> Artefato da fase **Ressonancia** da metodologia [Sinfonia](https://github.com/assertlab/sinfonia), baseado no template oficial `Feedback_and_Insights_Panel_Model_Canvas_Template.md`.
+> **Adaptacao de escopo:** como este e um projeto simples de faculdade, o painel consolida evidencias de demo, autoavaliacao e revisao dos exports `.md`, nao feedback estatistico de usuarios reais.
 
-**Legenda:** 🤖 consolidado pela IA · 🔄 híbrido (IA sintetiza quando houver dado) · 🧑 humano / pós-piloto.
+**Legenda:** ✅ definido/concluivel no escopo academico · 🔄 a preencher apos demo/testes · ➖ fora de escopo.
+
+**Evidencias ja analisadas:** [`extension/reports/2026-06-27_test_run.md`](../../extension/reports/2026-06-27_test_run.md) e exports em [`extension/reports/evidence/2026-06-27/`](../../extension/reports/evidence/2026-06-27/).
 
 ---
 
 ## 1. Objetivo do Ciclo de Feedback
 
-> 🤖 Pergunta primária que o ciclo busca responder:
->
-> **"O ADR gerado é fiel e útil o suficiente para ser adotado sem reescrita total, e o fluxo de captura → revisão → export é confiável e aderente a LGPD na prática real de reuniões?"**
+**Pergunta principal:** o ADR Generator demonstra de modo convincente que uma transcricao de reuniao pode virar um ADR estruturado, revisavel e exportavel, com cuidados minimos de privacidade e transparencia sobre IA?
 
-Sub-perguntas por persona ([`canvas_personas.md`](../01_exposicao/canvas_personas.md)):
-- **Rafael (Tech Lead):** o ADR captura a decisão e os trade-offs com fidelidade técnica?
-- **Camila (Eng. de Software):** o fluxo é rápido e não atrapalha a reunião?
-- **Bruno (Eng. Manager):** o registro reduz "decisão perdida" e gera confiança institucional?
+O ciclo de feedback academico deve responder:
+
+- O avaliador entende rapidamente o problema resolvido?
+- O ADR exportado e coerente com a transcricao usada no teste?
+- O fluxo deixa claro que a IA ajuda, mas nao substitui revisao humana?
+- As limitacoes tecnicas estao documentadas sem exagerar a maturidade do produto?
 
 ---
 
-## 2. Fontes e Métodos de Coleta
+## 2. Fontes e Metodos de Coleta
 
-> 🤖 — desenhado para o constrangimento **zero backend** (coleta sem servidor central).
-
-| Fonte | Método | Tipo | Estado |
+| Fonte | Metodo | Tipo | Estado |
 |---|---|---|---|
-| **Issues no GitHub** | canal primário de bug/feature reportado pelos pilotos | qualitativo | 🤖 definido |
-| **Entrevistas com as 3 personas** | roteiro estruturado pós-piloto (15–20 min) | qualitativo | 🤖 roteiro / 🧑 execução |
-| **Micro-survey opt-in local** | 1 pergunta após export ("este ADR foi útil? 1–5") armazenada localmente | quantitativo leve | 🤖 design / 🧑 respostas |
-| **Telemetria local-first agregada (opt-in)** | contadores de [`canvas_metricas_escala_impacto.md`](./canvas_metricas_escala_impacto.md) exportados manualmente | quantitativo | 🔄 |
-| **Suite de regressão alimentada por falhas reais** | transcrição anonimizada que gerou ADR ruim vira fixture (ciclo virtuoso — testes §10) | qualitativo→teste | 🤖 mecanismo |
+| **Demo academica** | Observacoes do professor/banca durante apresentacao | qualitativo | 🔄 |
+| **Autoavaliacao do autor** | Checklist apos executar os cenarios controlados | qualitativo | ✅ 23/23 testes |
+| **Exports `.md` gerados** | Comparacao entre transcricao e ADR final | evidencia objetiva | ✅ 6 exports |
+| **Relatorio de teste** | Registro de tempo, falhas, prints/evidencias e conclusao | evidencia documental | ✅ 2026-06-27 |
+| **Issues GitHub** | Opcional, caso colegas/professor reportem pontos | qualitativo | 🔄 |
 
-**Princípio:** nada de coleta automática de conteúdo; survey e telemetria são **opt-in** e **locais**, exportados pelo próprio usuário.
+**Fora de escopo:** entrevistas com personas, micro-survey opt-in, telemetria agregada, CSAT e ciclo continuo de feedback com usuarios reais.
 
 ---
 
 ## 3. Principais Feedbacks Recebidos (Dados Brutos)
 
-> 🧑 **PENDENTE: PILOTO.** Tabela pronta para preencher. As linhas pré-semeadas são **hipóteses a investigar** (riscos conhecidos), não feedback recebido.
+> Feedback aqui significa evidencias e observacoes dos testes ja executados, nao opiniao estatistica de usuarios reais.
 
-| Tópico | Feedback recorrente | Fonte | Frequência / impacto |
+| Tema | Feedback / evidencia registrada | Fonte | Estado |
 |---|---|---|---|
-| Fidelidade da decisão | _(a investigar — risco F1 viés de sotaque)_ | — | 🧑 |
-| Captura de legendas | _(a investigar — robustez do DOM do Meet)_ | — | 🧑 |
-| Fluxo de consentimento | _(a investigar — fricção do banner P1)_ | — | 🧑 |
-| Revisão obrigatória / export | _(a investigar — gate F1/T1 atrapalha ou ajuda?)_ | — | 🧑 |
-| Refinamento por seção | _(a investigar — usado? útil?)_ | — | 🧑 |
-| Pedido de colaboração/compartilhar | _(a investigar — pressão sobre zero backend)_ | — | 🧑 |
+| **Fidelidade da decisao** | Casos ideal e adversariais preservaram as decisoes reais; `sem-decisao.md` retornou `AUSÊNCIA DE DECISÃO`. | relatorio §3 + exports | ✅ |
+| **Qualidade estrutural** | Exports contem titulo, contexto, problema, alternativas, decisao, consequencias e incertezas. | 6 arquivos `.md` | ✅ |
+| **Seguranca contra prompt injection** | Instrucoes adversarias foram tratadas como conteudo da transcricao, nao como comando. | `injection-1/2/3.md` | ✅ |
+| **Transparencia sobre IA** | Front-matter inclui `ai_generated`, `gerado_por` e `revisado`; rodape pede revisao. | exports `.md` | ✅ |
+| **Privacidade** | PRIV 4/4; sem transcricao bruta no IndexedDB pos-geracao; wipe limpa dados. | relatorio §1–2 | ✅ |
+| **Robustez** | ROB 5/5; buffer recuperado apos reciclo do Service Worker. | relatorio §1–2 | ✅ |
+| **Ressalva de terminologia** | `injection-3.md` citou "captura audio", mas o produto captura legendas/transcricao. | relatorio §4 | ⚠️ |
+| **Lacuna de mensuracao** | Tempo manual vs. extensao e cap 30K ainda nao foram medidos nesta rodada. | relatorio §5 / canvas metricas | 🔄 |
 
 ---
 
-## 4. Insights Gerados (Síntese)
+## 4. Insights Gerados (Sintese)
 
-> 🔄 **PENDENTE: dados da §3.** Método de síntese definido; IA executa quando o bruto existir.
-
-**Método (🤖):** agrupar feedback por tópico → identificar *root cause* (não o sintoma) → formular conclusão acionável. Cada insight referencia as linhas brutas que o sustentam.
-
-| Insight | Causa-raiz | Evidência (§3) | Estado |
-|---|---|---|---|
-| _(a gerar)_ | — | — | 🧑/🔄 |
-
----
-
-## 5. Ações Recomendadas (Para o Backlog)
-
-> 🧑 priorização é decisão de produto. As linhas abaixo são **candidatos pré-piloto** já conhecidos (de [`prompt_design_record.md`](../02_composicao/prompt_design_record.md) §7 e do [`checklist_analise_riscos_ia.md`](../03_ensaio/checklist_analise_riscos_ia.md)), prontos para entrar/sair conforme o feedback real.
-
-| Épico / Ação | Insight de origem | Prioridade | Esforço |
-|---|---|---|---|
-| Expandir few-shot (≥3 casos contrastantes) | risco de viés do exemplo único (F2) | 🧑 | M |
-| Auditoria de diversidade dos exemplos few-shot | F2 | 🧑 | S |
-| Estratégia de sumarização > 30K | cap trunca reuniões longas (`T-IA-05`) | 🧑 | M |
-| Onboarding em 3 passos | `T-UX-01` (não bloqueante do piloto) | 🧑 | M |
-| Suite de regressão IA em CI | qualidade contínua do prompt | 🧑 | M |
-| Avaliar backend opt-in (colaboração) | se §3 mostrar demanda dura | 🧑 | L |
-
-> Itens só entram no backlog real **após** validação pelo feedback do piloto. Esta é a ponte para um novo ciclo Sinfonia (volta à Exposição/Composição com aprendizado).
+| Insight | Base | Consequencia |
+|---|---|---|
+| O zero-backend combina bem com o escopo academico | Arquitetura MV3 + IndexedDB + BYOK | Reduz complexidade e facilita explicar LGPD |
+| A revisao humana e parte do produto, nao detalhe | Risco F1/T1 e gate de export | O MVP deve ser apresentado como assistente, nao decisor |
+| A captura por legendas e util, mas fragil | Dependencia do DOM do Meet e das legendas ativas | Ter fixture/transcricao como fallback de demo |
+| O cap de 30K e aceitavel para MVP | Controla custo/latencia | Sumarizacao fica como trabalho futuro |
+| Feedback real de usuarios nao e necessario para fechar faculdade | Projeto nao tem grupo piloto | Validacao controlada substitui piloto interno |
+| O prompt ja resiste a ataques basicos de instrucao embutida | Suite adversaria `T-SEG-01` aprovada | Manter esses casos como evidencia e futura regressao |
+| A qualidade minima do ADR foi demonstrada | 6 exports com estrutura Nygard e decisoes coerentes | A apresentacao pode mostrar exports reais em vez de prometer piloto futuro |
+| A terminologia "audio" precisa ser evitada | Ressalva em `injection-3.md` | Ajustar narrativa/documentacao para "legendas/transcricao" |
 
 ---
 
-## Pendências do piloto (o que destrava este painel)
+## 5. Acoes Recomendadas (Para o Backlog)
 
-1. 🧑 Rodar o piloto e abrir os canais da §2 (issues, survey opt-in, entrevistas).
-2. 🧑 Preencher os dados brutos (§3) com feedback real.
-3. 🔄 IA sintetiza insights (§4) e propõe priorização (§5) para decisão humana.
+| Acao sugerida | Motivo | Prioridade academica |
+|---|---|---|
+| Preparar 2 ou 3 transcricoes de teste | Evita depender exclusivamente de Meet ao vivo | ✅ feito, ha 6 evidencias |
+| Gerar e versionar exports `.md` como evidencia | Facilita avaliacao da qualidade | ✅ feito |
+| Cronometrar manual vs. extensao | Sustenta a tese de reducao de esforco | Media |
+| Documentar limites na apresentacao/README | Evita prometer maturidade de produto real | Alta |
+| Manter suite adversarial de prompt injection como evidencia | Mostra cuidado com IA e seguranca | ✅ feito |
+| Corrigir narrativa "audio" → "legendas/transcricao" | Evita imprecisao sobre funcionamento do produto | Alta |
+| Registrar conclusao academica final no relatorio | Fecha o ciclo de feedback sem depender de usuarios reais | Alta |
+| Sumarizacao > 30K | Evolucao futura, nao requisito atual | Baixa |
+| Backend colaborativo | Trabalho futuro somente se virar produto real | Baixa / fora de escopo |
 
----
-
-## Referências cruzadas
-
-- Personas entrevistadas: [`canvas_personas.md`](../01_exposicao/canvas_personas.md)
-- Métricas quantitativas que cruzam com o feedback: [`canvas_metricas_escala_impacto.md`](./canvas_metricas_escala_impacto.md)
-- Ciclo virtuoso de regressão e feedback: [`canvas_testes_validacao.md`](../03_ensaio/canvas_testes_validacao.md) §10
-- Backlog de prompt herdado: [`prompt_design_record.md`](../02_composicao/prompt_design_record.md) §7
-- Riscos abertos que viram hipóteses de feedback: [`checklist_analise_riscos_ia.md`](../03_ensaio/checklist_analise_riscos_ia.md)
+**Referencias cruzadas:** [`canvas_metricas_escala_impacto.md`](./canvas_metricas_escala_impacto.md), [`canvas_testes_validacao.md`](../03_ensaio/canvas_testes_validacao.md), [`prompt_design_record.md`](../02_composicao/prompt_design_record.md), [`checklist_analise_riscos_ia.md`](../03_ensaio/checklist_analise_riscos_ia.md).
