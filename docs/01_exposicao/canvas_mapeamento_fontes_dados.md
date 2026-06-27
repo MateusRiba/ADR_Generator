@@ -11,7 +11,7 @@
 ```
 [Google Meet (legendas/áudio)] → [Web Speech API (transcrição local)] → [Buffer de texto na extensão]
         → [Prompt + few-shot examples] → [Gemini API (JSON estruturado)] → [Edição do usuário]
-                → [Markdown final] → [chrome.storage.local / IndexedDB]
+                → [Markdown final] → [IndexedDB]
 ```
 
 Quatro fontes de dados foram identificadas. Apenas a **Fonte 1** alimenta o modelo de IA com conteúdo novo a cada uso; as Fontes 2 e 3 são estáticas (parte do prompt); a Fonte 4 é o resultado persistido localmente.
@@ -57,7 +57,7 @@ Conteúdo textual transcrito automaticamente a partir do áudio da reunião enqu
 - Em ambos os casos, o usuário **controla explicitamente** o início e o fim da captura — nada é gravado sem ação manual.
 
 ### 9. Acesso aos Dados
-- **Acesso 100% local ao navegador.** Os dados transcritos vivem em memória do `content script` da extensão durante a sessão.
+- **Acesso 100% local ao navegador.** Os dados transcritos vivem no navegador do usuário durante a sessão; o buffer corrente é persistido temporariamente em IndexedDB para sobreviver ao ciclo de vida do service worker Manifest V3 e é apagado após geração/descarte.
 - O envio para a Gemini API ocorre **somente** quando o usuário aciona "Gerar ADR".
 - Para o MVP, não há API REST nem banco de dados intermediário — o pipeline é direto: buffer da extensão → chamada HTTPS à Gemini.
 
@@ -71,12 +71,12 @@ Conteúdo textual transcrito automaticamente a partir do áudio da reunião enqu
   - **Localidade:** todo o pipeline interno (captura, buffer, persistência) ocorre no navegador do usuário; **nenhum dado trafega por servidor próprio do produto** (zero backend no MVP).
   - **Consentimento explícito:** a extensão só inicia captura mediante ação manual; deve exibir aviso visível aos participantes da reunião (responsabilidade do usuário, recomendada pela UI).
   - **Transparência:** o único envio externo é o trecho de transcrição enviado à **Google Gemini API** via HTTPS, sujeito aos [termos de uso do Google AI Studio](https://ai.google.dev/terms).
-- **Chave de API:** armazenada localmente em `chrome.storage.local`, fornecida pelo próprio usuário; o produto não detém nem proxia chaves de terceiros.
+- **Chave de API:** armazenada em `chrome.storage.session`, fornecida pelo próprio usuário; o produto não detém nem proxia chaves de terceiros.
 - **Sem telemetria:** o MVP não envia logs nem métricas para servidor próprio.
 
 ### 12. Requisitos de Integração
 - **Cap de 30.000 caracteres** (~7.500 tokens) por sessão para controlar custo da API Gemini e respeitar limites de contexto eficientes.
-- **Truncamento ou sumarização prévia** caso a transcrição exceda o cap (a definir na fase de Composição).
+- **Truncamento rígido com aviso ao usuário** caso a transcrição exceda o cap na v0.1; sumarização prévia fica como evolução pós-piloto.
 - **Sanitização leve** antes do envio: remoção de marcadores duplicados, normalização de espaços em branco.
 - **Compatibilidade com Manifest V3:** captura precisa funcionar dentro das restrições do service worker (sem APIs deprecadas).
 
@@ -183,7 +183,7 @@ Conjunto de ADRs gerados pelo usuário ao longo do tempo, armazenado para consul
 - **Textual estruturado** (objeto JSON do ADR) + metadados (timestamp, título da reunião, tags opcionais).
 
 ### 5. Formato dos Dados
-- Objetos JSON serializados em `chrome.storage.local` (registros pequenos) ou em **IndexedDB** (recomendado para histórico de centenas/milhares de ADRs com busca textual).
+- Objetos JSON serializados em **IndexedDB**, com metadados de revisão e timestamps.
 
 ### 6. Frequência de Atualização
 - Sob demanda: a cada ADR finalizado e salvo pelo usuário.
@@ -195,7 +195,7 @@ Conjunto de ADRs gerados pelo usuário ao longo do tempo, armazenado para consul
 - Persistência manual acionada pelo botão "Salvar" da UI da extensão.
 
 ### 9. Acesso aos Dados
-- API do Chrome (`chrome.storage.local`) ou IndexedDB.
+- IndexedDB nativo da extensão.
 - UI da extensão expõe listagem, busca por palavras-chave e exportação como `.md`.
 
 ### 10. Proprietário dos Dados
@@ -215,7 +215,7 @@ Conjunto de ADRs gerados pelo usuário ao longo do tempo, armazenado para consul
 
 | # | Fonte | Tipo | Origem | Persistência | Risco LGPD |
 |---|---|---|---|---|---|
-| 1 | Transcrição da reunião | Textual não estruturado | Web Speech API / Google Meet | Buffer em memória | **Alto** — mitigado por processamento local |
+| 1 | Transcrição da reunião | Textual não estruturado | Web Speech API / Google Meet | Buffer temporário em IndexedDB durante a captura; apagado após geração/descarte | **Alto** — mitigado por processamento local |
 | 2 | Exemplos few-shot | Textual + JSON | Curadoria interna | Embarcado no código | Baixo — anonimizados |
 | 3 | Schema do ADR | Estrutural | Padrão Michael Nygard | Embarcado no código | Nenhum |
-| 4 | Histórico de ADRs | JSON estruturado | Output IA + edição humana | `chrome.storage.local` / IndexedDB | Médio — dado fica local ao navegador |
+| 4 | Histórico de ADRs | JSON estruturado | Output IA + edição humana | IndexedDB | Médio — dado fica local ao navegador |

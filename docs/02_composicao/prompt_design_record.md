@@ -189,7 +189,7 @@ Resposta real obtida no experimento de validação (transcrição de 35K caracte
 
 ### 4.3. Limites de contexto
 
-- **Cap de input:** 30.000 caracteres (~7.500 tokens) por transcrição. Truncamento (estratégia ainda a definir: head, tail ou sumarização prévia) caso exceda.
+- **Cap de input:** 30.000 caracteres (~7.500 tokens) por transcrição. A extensão trunca a captura ao atingir o limite e exibe aviso ao usuário (`T-IA-05`); sumarização prévia para reuniões maiores fica como evolução pós-piloto.
 - **Output:** sem limite explícito, mas tipicamente entre 1K e 4K caracteres para ADRs bem formados.
 
 ---
@@ -208,7 +208,7 @@ Antes do envio à Gemini, a extensão aplicará (a especificar na fase de Ensaio
 
 - **Termos técnicos em inglês** (ex.: "Garnet", "RESP protocol", "sharding") são preservados pela Web Speech API com qualidade variável. O modelo demonstrou robustez em interpretar variações de grafia no experimento de validação.
 - **Múltiplas decisões em uma reunião:** o prompt atual extrai **uma decisão por chamada**. Reuniões com várias decisões independentes exigirão fluxo de segmentação prévia — pendente para fases futuras.
-- **Ausência de decisão clara:** comportamento esperado é o modelo escrever `"AUSÊNCIA DE DECISÃO"` em `decisao`. Caso pendente de validação experimental.
+- **Ausência de decisão clara:** comportamento esperado é o modelo escrever `"AUSÊNCIA DE DECISÃO"` em `decisao`. Validado manualmente em 2026-06-27 (`sem-decisao.md`).
 
 ### 5.3. LGPD e fidelidade
 
@@ -221,7 +221,7 @@ Antes do envio à Gemini, a extensão aplicará (a especificar na fase de Ensaio
 |---|---|---|
 | Few-shot único pode enviesar o estilo de saída | Exemplo escolhido representativo (PostgreSQL / JSONB) | Expandir base de exemplos com casos contrastantes (ausência de decisão, múltiplas alternativas) — fase de Ensaio |
 | `temperature: 0` torna o modelo determinístico mas não imune a alucinação | Regra de fidelidade + schema forçado | Estabelecer regressão automatizada (suite de transcrições padrão × saídas esperadas) na fase de Ensaio |
-| Cap de 30K caracteres pode truncar reuniões longas | Cap simples (a definir estratégia) | Sumarização prévia para reuniões >30K — fase de Ensaio |
+| Cap de 30K caracteres pode truncar reuniões longas | Cap aplicado na extensão, com aviso de trecho cortado (`T-IA-05`) | Sumarização prévia para reuniões >30K — evolução pós-piloto |
 
 ---
 
@@ -250,7 +250,8 @@ Gere um ADR no formato Michael Nygard baseado na seguinte transcrição de reuni
 
 - [ ] Expandir biblioteca de few-shot examples (mínimo 3 casos: decisão clara, ausência de decisão, múltiplas alternativas concorrentes).
 - [ ] Implementar suíte de regressão (input fixo → JSON esperado) executável em CI.
-- [ ] Definir estratégia de truncamento/sumarização para transcrições > 30K caracteres.
+- [x] Definir estratégia de truncamento para transcrições > 30K caracteres na v0.1: cap rígido + aviso ao usuário (`T-IA-05`).
+- [ ] Avaliar sumarização prévia para reuniões >30K caracteres em versão pós-piloto.
 - [ ] Definir prompts derivados para o **refinamento por seção** (Ideia G do canvas de ideação): comandos como `"expanda alternativas"`, `"melhore o contexto"` que regeneram apenas o campo selecionado preservando o restante.
 
 ---

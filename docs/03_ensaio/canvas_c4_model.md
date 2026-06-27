@@ -40,7 +40,7 @@ Personas definidas em [`canvas_personas.md`](../01_exposicao/canvas_personas.md)
 | **Google Meet** | Origem do áudio/legendas da reunião. | ADR Generator → Meet (leitura) | DOM/áudio local (sem rede). |
 | **Web Speech API** (browser) | Converte fala em texto (STT) localmente no navegador. | ADR Generator ↔ Web Speech API | Local, sem rede externa. |
 | **Google Gemini API** | Gera o ADR estruturado a partir da transcrição (única dependência de rede externa). | ADR Generator → Gemini (HTTPS) | Trecho de transcrição + prompt; até 30K caracteres por sessão (ver `canvas_mapeamento_fontes_dados.md` Fonte 1). |
-| **Armazenamento Local do Navegador** (`chrome.storage.local` / IndexedDB) | Persiste histórico de ADRs e preferências do usuário. | ADR Generator ↔ Storage | Local. |
+| **Armazenamento Local do Navegador** (IndexedDB / `chrome.storage.session`) | Persiste histórico de ADRs e buffer temporário em IndexedDB; mantém API key apenas em sessão. | ADR Generator ↔ Storage | Local. |
 | **GitHub** (opcional, ação do usuário) | Repositório onde o `.md` exportado é versionado por ação manual do engenheiro. | Usuário → GitHub (fora da extensão) | HTTPS via cliente git/UI do GitHub. |
 
 ### Interações (Fluxos Principais)
@@ -87,7 +87,7 @@ flowchart LR
 | 1 | **Content Script** *(injected script)* | JavaScript / DOM API / `chrome.scripting` | Injetado no domínio `meet.google.com`. Captura o stream de áudio/legendas diretamente do DOM da reunião e repassa ao Background Service. |
 | 2 | **Popup / Sidebar (UI)** | HTML + CSS + JS (vanilla ou React) | Interface gráfica do usuário: controle (`START/STOP`), exibição do rascunho do ADR, edição inline, refinamento por seção, navegação no histórico, export `.md`. |
 | 3 | **Background Service Worker** | JavaScript / Manifest V3 Service Worker | Núcleo da extensão. Orquestra capturas, chamadas à Web Speech API e à Gemini, monta o prompt e gerencia o estado da sessão. Único contêiner com permissão para tráfego HTTPS externo. |
-| 4 | **Banco de Dados Local** | IndexedDB API / `chrome.storage.local` | Persiste ADRs gerados, transcrições temporárias da sessão corrente e configurações (API key do usuário, preferências). |
+| 4 | **Banco de Dados Local** | IndexedDB API / `chrome.storage.session` | Persiste ADRs gerados e transcrições temporárias da sessão corrente em IndexedDB; mantém a API key do usuário apenas em `chrome.storage.session`. |
 
 ### Interações entre Contêineres
 
@@ -219,7 +219,7 @@ Estas decisões emergem do C4 acima e ficarão registradas com mais profundidade
 1. **Zero backend** — toda lógica vive no navegador do usuário. Justificativa: aderência LGPD por design, viabilidade em 1 mês, custo de infra zero (ver [`canvas_estrategia_acao.md`](../01_exposicao/canvas_estrategia_acao.md) §5).
 2. **Único ponto de tráfego externo: Gemini** — concentra responsabilidades de segurança, retry e rate-limit no `Gemini API Client`.
 3. **Service Worker como núcleo orquestrador** — necessário por Manifest V3 (sem `background pages` persistentes); todos os componentes de lógica vivem nele.
-4. **Persistência local no IndexedDB e não em `chrome.storage.local`** — IndexedDB suporta buscas estruturadas e maior volume; `chrome.storage.local` fica reservado para preferências/API key.
+4. **Persistência local no IndexedDB e API key em `chrome.storage.session`** — IndexedDB suporta buscas estruturadas e maior volume para ADRs/buffer; a chave Gemini fica apenas em sessão para reduzir persistência sensível em disco.
 5. **Schema forçado via `responseSchema`** — elimina parsing frágil de texto livre; falhas de validação ficam isoladas ao `Data Parser / Validator` (ver `prompt_design_record.md` §2 e Experimento 1 do canvas de experimentos).
 
 ---

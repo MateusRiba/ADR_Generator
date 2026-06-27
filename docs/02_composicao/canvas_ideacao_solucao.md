@@ -63,7 +63,7 @@ Complementada por **Ideia G** (refinamento por seção) como funcionalidade deri
 ### Escopo levado para o próximo passo (Prompt Design Record + Design de Experimentos)
 
 - Captura de transcrição via Web Speech API (alternativa: leitura das legendas do Meet).
-- Pipeline: buffer da extensão → prompt CoT + few-shot → Gemini → JSON estruturado → UI editável → export `.md` / `chrome.storage.local`.
+- Pipeline: buffer da extensão → prompt CoT + few-shot → Gemini → JSON estruturado → UI editável → IndexedDB local → export `.md`.
 - Refinamento por seção (Ideia G) entra como comando isolado que regenera apenas o campo selecionado, reusando o mesmo schema da Fonte 3.
 
 > Esta solução é validada experimentalmente no [`canvas_design_experimentos.md`](./canvas_design_experimentos.md) e tem o prompt detalhado em [`prompt_design_record.md`](./prompt_design_record.md).
