@@ -7,6 +7,18 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-27] ingest | Fecha a fase Ensaio: Intelligence Strategy Record + Checklist de Lançamento
+
+Produzidos os 2 artefatos que faltavam da fase **03 — Ensaio**, levando-a de 3/5 para **5/5 (concluída)**. Ambos consolidam material já disperso nos canvases existentes — não introduzem requisito novo, formalizam o que já estava decidido/implementado.
+
+**`intelligence_strategy_record.md` (novo):** registra a estratégia de inteligência em 8 seções — papel da IA (é o produto, não enfeite), decisão **Buy + Prompt Engineering** (descarta treino/fine-tuning, com racional), escolha/config do modelo (`gemini-3-flash-preview`, `temperature:0`, `responseSchema`, com política de troca via isolamento no `Gemini API Client`), **estratégia de dados** data-light (cap 30K, apagamento da transcrição bruta, zero corpus central, sem realimentar treino), robustez/degradação graciosa (retry/backoff, checkpoint do SW, human-in-the-loop não-negociável), **defensibilidade** (moat = prompt curado + UX LGPD + integração Meet, não o modelo), ciclo de melhoria local-first e limites éticos/custo (BYOK). Referencia `prompt_design_record.md`, `canvas_c4_model.md` e `checklist_analise_riscos_ia.md` em vez de duplicá-los.
+
+**`checklist_lancamento.md` (novo):** gate único de Go/No-Go para a v0.1. Consolida os critérios de aceitação de `canvas_testes_validacao.md` §4 e a cobertura dos 7 riscos críticos de `checklist_analise_riscos_ia.md` §5–6. Veredito atual: **NO-GO condicional** — MVP código-completo e build verde, mas a **validação manual no Chrome** dos 7 riscos críticos é o único bloqueio para o piloto interno; bloqueios adicionais (revisão jurídica, disclaimer LGPD, BYOK documentado, regressão IA em CI) listados só para release público. Inclui rollback/suporte e tabela de aprovações por persona.
+
+**Atualizações de índice:** `docs/README.md` (status 03 → ✅ nos 2 artefatos; "Estado Atual" agora marca Ensaio concluída e aponta a Ressonância como próxima fase) e `docs/03_ensaio/README.md` (lista os 5 artefatos com links e marca a fase concluída).
+
+---
+
 ## [2026-06-27] feature | Editor/revisão em aba inteira + export gate com revisão persistida
 
 Duas mudanças de UX/conformidade após uso real.
