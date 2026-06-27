@@ -145,9 +145,11 @@ flowchart TB
 | **Refinement Engine** | Background | JS / reuso de Prompt Manager | Suporta a Ideia G (refinamento por seção): regenera apenas o campo selecionado pelo usuário, mantendo o restante intacto. Reusa Prompt Manager + Gemini Client. |
 | **Storage Repository** | Background | IndexedDB API | Camada única de acesso ao Banco de Dados Local. Operações `save`, `list`, `get`, `delete` e `update` de ADRs; isola a UI dos detalhes do IndexedDB. |
 | **Markdown Formatter** | Background ou UI | JS / String Manipulation | Converte o objeto JSON validado em Markdown segundo o padrão Michael Nygard (cabeçalhos, listas, blocos), preparando o conteúdo para download `.md`. |
-| **Capture View** | UI | HTML/JS | Tela de controle da captura: botões `START/STOP`, indicador de tempo decorrido, contador de caracteres acumulados. |
-| **ADR Editor View** | UI | HTML/JS | Tela de edição do ADR gerado: campos editáveis para cada chave do schema, botão de refinamento por seção. |
+| **Recording Overlay** | Content Script | JS / Shadow DOM | Box de preview injetado na página do Meet enquanto a captura está ativa: ponto pulsante, cronômetro + horário de início, últimas linhas de legenda e botão "Encerrar" (com confirmação) que dispara `STOP_CAPTURE` ao SW. Recebe `CAPTURE_TRUNCATED` para avisar do cap de 30K. Isolado por Shadow DOM contra o CSS do Meet. |
+| **Capture View** | UI | HTML/JS | Tela de controle da captura: botões `START/STOP`, indicador de tempo decorrido, contador de caracteres, modo redação pré-envio (P2) e aviso de cap atingido. |
+| **ADR Editor View** | UI | HTML/JS | Tela de edição do ADR gerado: campos editáveis para cada chave do schema, botão de refinamento por seção, export `.md` liberado só após revisão da `decisao` (F1). |
 | **History View** | UI | HTML/JS | Tela de listagem do histórico local, com busca por título e abertura de ADRs anteriores. |
+| **Settings View** | UI | HTML/JS | Aba de configurações dentro do popup: chave da Gemini API (`storage.session`) e "Apagar todos os dados" (reset total, type-to-confirm). |
 
 ### Fluxos Internos (Geração de um ADR ponta-a-ponta)
 

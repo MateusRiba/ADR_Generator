@@ -7,6 +7,28 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-27] feature | Overlay de gravação na página do Meet + integrações finais
+
+Box de preview in-page durante a captura, para dar feedback visível mesmo com o popup do Chrome fechado. Implementado em sessão separada (plano `~/.claude/plans/hashed-swinging-metcalfe.md`) e reconciliado com o endurecimento pós-MVP desta data.
+
+**Recording Overlay (`content/recording_overlay.ts`, novo):** módulo TS puro (sem React) com **Shadow DOM** para isolar do CSS agressivo do Meet. Mostra ponto pulsante "Gravando ADR", **cronômetro** (mm:ss / h:mm:ss) + **horário de início**, as **últimas ~4 linhas** de legenda (`aria-live="polite"`) e botão **"Encerrar gravação"** com **confirmação inline** (sem `window.confirm`, que bloqueia). Canto inferior direito (acima da barra do Meet), `z-index` máximo, cores alinhadas ao popup.
+
+**Integração no content script (`content/meet_capture.ts`):** `startCapture()` chama `showOverlay({ startedAt, onStop })`; `onStop` envia **`STOP_CAPTURE` ao SW** (fonte única da verdade) — o SW ecoa de volta e roda `stopCapture()` → `hideOverlay()`, mantendo popup/overlay/SW sincronizados. `flushCaptions()` faz `pushLine(delta)`; o ramo do `bodyObserver` controla o hint "Ative as legendas (CC)".
+
+**Melhor dos dois mundos (reconciliação com o endurecimento):**
+- **Cap de 30K (C2) ↔ overlay:** sem isso, o overlay seguiria exibindo linhas após o cap, dando a falsa impressão de que ainda captura. Nova mensagem **`CAPTURE_TRUNCATED`** (SW → content via `tabs.sendMessage`): o `appendChunk` notifica a aba **uma única vez** na transição para truncado; o overlay (`setTruncated`) mostra um banner persistente "Limite de captura atingido — novas falas não entram mais neste ADR".
+- **Badge ● (T-UX-03):** o badge na toolbar (sessão de endurecimento) e o cronômetro in-page do overlay são **complementares** — juntos completam o `T-UX-03` (indicador + contador de tempo), antes marcado como parcial.
+- **`onStop` → `STOP_CAPTURE`** já limpa o badge (handler do SW), então encerrar pelo overlay sincroniza tudo.
+
+**Também nesta data (commits/ajustes avulsos):**
+- `Settings.tsx` — "Apagar todos os dados" virou **type-to-confirm**: o usuário digita `APAGAR` (campo em uppercase automático) para liberar o botão danger, no lugar da confirmação em dois cliques.
+- `runtime/messaging.ts` — quando a resposta vem `null`/`undefined` (SW não reconhece a mensagem), o erro agora diz "Recarregue a extensão (SW desatualizado)" em vez do críptico `: null`. Em MV3 o SW não recarrega sozinho após rebuild.
+- `service_worker.ts` — `sendWithRetry` com backoff após injetar o content script (corrida do loader assíncrono do crxjs: `executeScript` resolve antes de o listener `onMessage` existir).
+
+**Validação:** `npm run build` (`tsc --noEmit` + vite) passou. Testes manuais no Chrome pendentes.
+
+---
+
 ## [2026-06-27] feature | Endurecimento pós-MVP: gate F1, retry/backoff, redação P2 + quick wins
 
 Ao cruzar o `checklist_analise_riscos_ia.md` §6 e o `canvas_testes_validacao.md` §3 com o código real, identificaram-se mitigações documentadas ainda não implementadas. Esta sessão fecha 3 itens críticos (riscos F1, P2, robustez) e 4 quick wins (PRIV/UX/transparência). Só código (`extension/src/`); doc atualizada nesta mesma entrada.

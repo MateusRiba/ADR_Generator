@@ -73,7 +73,7 @@ A documentação segue a metodologia [Sinfonia](https://github.com/assertlab/sin
 - **Roadmap das 12 etapas de implementação da extensão:** [`docs/roadmap_implementacao.md`](./docs/roadmap_implementacao.md) — leitura obrigatória antes de codar; cada etapa lista tarefas, critério de pronto e riscos mitigados
 - **Domínio, personas, fontes de dados, estratégia:** [`docs/01_exposicao/`](./docs/01_exposicao/) — leitura obrigatória para qualquer tarefa de produto
 - **Design de prompt e experimentos:** [`docs/02_composicao/`](./docs/02_composicao/) — `prompt_design_record.md` é a fonte canônica do system instruction e do schema dos 8 campos
-- **Arquitetura técnica (C4), riscos de IA, testes:** [`docs/03_ensaio/`](./docs/03_ensaio/) — `canvas_c4_model.md` define os 4 contêineres e 11 componentes; `checklist_analise_riscos_ia.md` enumera os 7 riscos críticos (P1, P2, S1, T1, P3, F1, S6) com IDs de teste rastreáveis
+- **Arquitetura técnica (C4), riscos de IA, testes:** [`docs/03_ensaio/`](./docs/03_ensaio/) — `canvas_c4_model.md` define os 4 contêineres e 13 componentes (inclui Recording Overlay no Content Script e Settings View na UI); `checklist_analise_riscos_ia.md` enumera os 7 riscos críticos (P1, P2, S1, T1, P3, F1, S6) com IDs de teste rastreáveis
 - **Métricas, escalabilidade, feedback:** [`docs/04_ressonancia/`](./docs/04_ressonancia/) _(a produzir)_
 - **Histórico de mudanças na documentação e racional das decisões:** [`docs/log.md`](./docs/log.md) — consultar antes de grandes mudanças para evitar retrabalho
 

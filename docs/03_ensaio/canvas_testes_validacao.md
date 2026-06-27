@@ -81,7 +81,8 @@ Em uma frase: **um engenheiro instala a extensão, participa de uma reunião rea
 |---|---|---|
 | `T-UX-01` | Primeira instalação | Tela de boas-vindas com 3 passos: (1) instalar API key, (2) ler aviso LGPD, (3) testar com transcrição de exemplo. |
 | `T-UX-02` | **Banner de consentimento bloqueante** | `START_CAPTURE` exibe modal com checkbox *"Confirmo que avisei todos os participantes da reunião"*; sem marcar, botão "Iniciar" fica disabled. **Mitiga P1.** |
-| `T-UX-03` | Indicação de captura ativa | Badge no ícone da extensão (ponto vermelho) + contador de tempo na UI. |
+| `T-UX-03` | Indicação de captura ativa | Badge ● no ícone da extensão **e** overlay in-page no Meet (ponto pulsante + cronômetro + horário de início). |
+| `T-UX-06` | Overlay de gravação no Meet | Box aparece ao iniciar a captura (canto inferior direito), mostra últimas linhas de legenda, hint "Ative CC" antes das legendas, banner de cap ao truncar, e "Encerrar gravação" com confirmação inline que sincroniza popup/SW. |
 | `T-UX-04` | Rótulo "Gerado por IA" | Visível no `ADR Editor View` o tempo todo, não esconder após scroll. |
 | `T-UX-05` | Acessibilidade básica | Navegação por teclado funciona em todas as 3 views (Capture/Editor/History). |
 
@@ -191,7 +192,8 @@ Para liberar v0.1 internamente:
 | `T-IA-05` (cap de 30K + aviso "trecho cortado") | 🟦 Implementado 2026-06-27 (flag `truncated`). |
 | `T-PRIV-04` (reset total "Apagar todos os dados") | 🟦 Implementado 2026-06-27 (`WIPE_ALL_DATA`). |
 | `T-ROB-04` (retry/backoff em 429/5xx) | 🟦 Implementado 2026-06-27 (`client.ts`). |
-| `T-UX-03` (badge de gravação no ícone) | 🟦 Parcial 2026-06-27 — ponto ● vermelho; contador de tempo fora de escopo. |
+| `T-UX-03` (indicação de captura ativa) | 🟦 Implementado 2026-06-27 — badge ● no ícone + overlay in-page com cronômetro e horário de início. |
+| `T-UX-06` (overlay de gravação no Meet) | 🟦 Implementado 2026-06-27 (`recording_overlay.ts`). |
 | `T-SEG-01` (prompt injection), `T-PRIV-01` (apagamento), `T-ROB-02` (SW reciclado), demais `T-FUNC-*` | 🟦 Código pronto (Etapas 8–12), validação manual pendente. |
 | Demais casos (PERF, COMPAT, UX restantes, `T-UX-01` onboarding) | ⬜ Pendente. |
 
