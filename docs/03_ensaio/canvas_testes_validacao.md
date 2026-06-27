@@ -72,7 +72,7 @@ Em uma frase: **um engenheiro instala a extensão, participa de uma reunião rea
 | ID | Cenário | Resultado Esperado |
 |---|---|---|
 | `T-PRIV-01` | **Apagamento de transcrição bruta** | Após `ADR pronto`, inspecionar IndexedDB: nenhum registro de transcrição bruta da sessão. **Mitiga P3.** |
-| `T-PRIV-02` | Persistência da API key | API key armazenada em `chrome.storage.local`, **nunca** em IndexedDB. Encriptada com `chrome.storage` quando possível. |
+| `T-PRIV-02` | Persistência da API key | API key armazenada em `chrome.storage.session`, **nunca** em IndexedDB, `localStorage` ou `chrome.storage.local`. |
 | `T-PRIV-03` | Network audit | Inspecionar todas as conexões de rede da extensão. Esperado: **apenas** `generativelanguage.googleapis.com`. Zero telemetria, zero analytics. |
 | `T-PRIV-04` | Reset total | Botão "Apagar todos os dados" remove: histórico, preferências, API key, qualquer cache. |
 
@@ -182,22 +182,36 @@ Para liberar v0.1 internamente:
 
 ### Estado atual (snapshot — atualizado em 2026-06-27)
 
-> 🟦 = **código completo, validação manual no Chrome pendente**. ⬜ = não implementado.
+> ✅ = aprovado em validação manual/assistida. ⚠️ = aprovado com ressalva não bloqueante. ⬜ = não implementado ou fora do piloto.
 
 | Caso | Estado |
 |---|---|
 | `T-IA-01` (regressão Garnet/Redis) | ✅ Aprovado em 2026-05-27 — ver `canvas_design_experimentos.md` §6. |
-| `T-FUNC-06` (disclaimer + front-matter `gerado_por`/`revisado` real) | 🟦 Implementado 2026-06-27 (`formatter.ts`). |
-| `T-FUNC-07` (revisão obrigatória antes do export, **persistida**, Editor+Histórico) | 🟦 Implementado 2026-06-27 (`adrs.ts`, `Editor.tsx`, `History.tsx`). Mitiga F1/T1. |
-| `T-FUNC-10` (Editor/revisão em aba inteira) | 🟦 Implementado 2026-06-27 (`src/page/`). |
-| `T-FUNC-08` (modo redação — trecho removido não vai à Gemini) | 🟦 Implementado 2026-06-27 (`GET_TRANSCRIPT` + `Capture.tsx`). Mitiga P2. |
-| `T-IA-05` (cap de 30K + aviso "trecho cortado") | 🟦 Implementado 2026-06-27 (flag `truncated`). |
-| `T-PRIV-04` (reset total "Apagar todos os dados") | 🟦 Implementado 2026-06-27 (`WIPE_ALL_DATA`). |
-| `T-ROB-04` (retry/backoff em 429/5xx) | 🟦 Implementado 2026-06-27 (`client.ts`). |
-| `T-UX-03` (indicação de captura ativa) | 🟦 Implementado 2026-06-27 — badge ● no ícone + overlay in-page com cronômetro e horário de início. |
-| `T-UX-06` (overlay de gravação no Meet) | 🟦 Implementado 2026-06-27 (`recording_overlay.ts`). |
-| `T-SEG-01` (prompt injection), `T-PRIV-01` (apagamento), `T-ROB-02` (SW reciclado), demais `T-FUNC-*` | 🟦 Código pronto (Etapas 8–12), validação manual pendente. |
-| Demais casos (PERF, COMPAT, UX restantes, `T-UX-01` onboarding) | ⬜ Pendente. |
+| `T-FUNC-01` (pipeline feliz curto) | ✅ Aprovado em 2026-06-27 — ver relatório `extension/reports/2026-06-27_test_run.md`. |
+| `T-FUNC-05` (ausência de decisão) | ✅ Aprovado em 2026-06-27 (`sem-decisao.md`): `decisao === "AUSÊNCIA DE DECISÃO"`. |
+| `T-FUNC-06` (disclaimer + front-matter `gerado_por`/`revisado` real) | ✅ Aprovado em 2026-06-27 (`formatter.ts` + export manual). |
+| `T-FUNC-07` (revisão obrigatória antes do export, **persistida**, Editor+Histórico) | ✅ Aprovado em 2026-06-27 (`adrs.ts`, `Editor.tsx`, `History.tsx`). Mitiga F1/T1. |
+| `T-FUNC-08` (modo redação — trecho removido não vai à Gemini) | ✅ Aprovado em 2026-06-27 (`GET_TRANSCRIPT` + revisão em aba cheia). Mitiga P2. |
+| `T-FUNC-09` (histórico local + busca por título) | ✅ Aprovado em 2026-06-27. |
+| `T-FUNC-10` (Editor/revisão em aba inteira) | ✅ Aprovado em 2026-06-27 (`src/page/`). |
+| `T-SEG-01` (prompt injection) | ✅ Aprovado em 2026-06-27 com suite adversária (`ideal`, `injection-1`, `injection-2`, `injection-3`) — evidências em `extension/reports/evidence/2026-06-27/`. |
+| `T-SEG-02` (jailbreak do schema) | ✅ Aprovado em 2026-06-27 (`xss-schema.md` + `injection-3.md`). |
+| `T-SEG-03` (XSS via campo do ADR) | ✅ Aprovado em 2026-06-27 (`xss-schema.md`): `<script>` tratado como texto, sem execução. |
+| `T-SEG-04` (API key não vaza em logs) | ✅ Aprovado em 2026-06-27. |
+| `T-PRIV-01` (apagamento de transcrição bruta) | ✅ Aprovado em 2026-06-27; transcrição bruta removida após geração. |
+| `T-PRIV-02` (API key só em `chrome.storage.session`) | ✅ Aprovado em 2026-06-27. |
+| `T-PRIV-03` (único host externo = Gemini) | ✅ Aprovado em 2026-06-27. |
+| `T-PRIV-04` (reset total "Apagar todos os dados") | ✅ Aprovado em 2026-06-27 (`WIPE_ALL_DATA`). |
+| `T-IA-05` (cap de 30K + aviso "trecho cortado") | ✅ Aprovado em 2026-06-27 (flag `truncated`). |
+| `T-ROB-01` (sem internet ao gerar) | ✅ Aprovado em 2026-06-27. |
+| `T-ROB-02` (SW reciclado) | ✅ Aprovado em 2026-06-27 (checkpoint + rehidratação). |
+| `T-ROB-04` (retry/backoff em 429/5xx) | ✅ Aprovado em 2026-06-27 (`client.ts`). |
+| `T-ROB-05` (JSON inválido) | ✅ Aprovado em 2026-06-27 (erro acionável). |
+| `T-UX-03` (indicação de captura ativa) | ✅ Aprovado em 2026-06-27 — badge ● no ícone + overlay in-page com cronômetro e horário de início. |
+| `T-UX-05` (acessibilidade básica por teclado) | ✅ Aprovado em 2026-06-27. |
+| `T-UX-06` (overlay de gravação no Meet) | ✅ Aprovado em 2026-06-27 (`recording_overlay.ts`). |
+| Ressalva da suite IA/manual | ⚠️ Em `injection-3.md`, o ADR usou "captura áudio" ao descrever a extensão; o produto captura legendas/transcrição. Não bloqueia S1, mas vira ajuste futuro de precisão terminológica. |
+| Demais casos (PERF/COMPAT formais, `T-UX-01` onboarding, suite IA automatizada `T-IA-02`) | ⬜ Débitos não bloqueantes para piloto interno. |
 
 ### Estrutura de relatório por execução
 

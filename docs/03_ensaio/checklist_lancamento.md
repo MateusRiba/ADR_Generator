@@ -73,7 +73,7 @@ Liberar a **v0.1 do ADR Generator** — extensão Chrome MV3 que captura legenda
 
 - [x] **P1** — PII sem consentimento → banner bloqueante antes de `START_CAPTURE` (`T-UX-02`) — *código ✅, manual ✅*
 - [x] **P2** — Vazamento via Gemini → modo redação pré-envio + aviso persistente (`T-FUNC-08`) — *✅ / ✅*
-- [ ] **S1** — Prompt injection via fala → delimitadores + bloco anti-injection (`T-SEG-01`) — *código ✅, suite ⬜*
+- [x] **S1** — Prompt injection via fala → delimitadores + bloco anti-injection (`T-SEG-01`) — *código ✅, suite ✅*
 - [x] **T1** — Confusão IA × decisão → banner "Gerado por IA" + front-matter `revisado` real (`T-FUNC-06`) — *✅ / ✅*
 - [x] **P3** — Retenção de transcrição bruta → apaga IndexedDB pós-geração + reset total (`T-PRIV-01/04`) — *✅ / ✅*
 - [x] **F1** — Viés de sotaque → revisão humana obrigatória, gate persistido Editor+Histórico (`T-FUNC-07`) — *✅ / ✅*
@@ -83,7 +83,7 @@ Liberar a **v0.1 do ADR Generator** — extensão Chrome MV3 que captura legenda
 
 - [x] **FUNC** 100% passam — ✅
 - [x] **PRIV** 100% passam (LGPD é binário, sem ressalva) — ✅
-- [ ] **SEG** 100% passam, `T-SEG-01` destacado — pendente apenas prompt injection
+- [x] **SEG** 100% passam, `T-SEG-01` destacado — ✅
 - [x] **IA** ≥ 90% da suite aplicável ao piloto manual — ✅; suite automatizada segue débito não bloqueante
 - [x] **PERF/COMPAT/UX** ressalva documentável aceitável — ✅ parcial / ➖
 
@@ -108,14 +108,14 @@ Liberar a **v0.1 do ADR Generator** — extensão Chrome MV3 que captura legenda
 
 ### Decisão Final de Go/No-Go
 
-> **Seleção:** ⬜ GO · ☑ **NO-GO condicional**
+> **Seleção:** ☑ **GO** · ⬜ NO-GO condicional
 
-**Estado atual: NO-GO condicional.** O MVP está código-completo (Etapas 1–12), o build está verde e a validação manual no Chrome foi registrada para todos os gates aplicáveis **exceto S1 / `T-SEG-01` prompt injection**. Esse é o único bloqueio restante para o piloto interno.
+**Estado atual: GO para piloto interno.** O MVP está código-completo (Etapas 1–12), o build está verde e a validação manual no Chrome foi registrada para os 7 riscos críticos, incluindo **S1 / `T-SEG-01` prompt injection**.
 
-**Para virar GO (piloto interno):**
-1. Executar `T-SEG-01` com a suite adversária de prompt injection.
-2. Registrar o resultado em `extension/reports/2026-06-27_test_run.md`.
-3. Marcar `S1` na §5.1 e fechar `SEG` 100% na §5.2.
+**Próximos passos pós-GO (piloto interno):**
+1. Coletar aprovações (Tech Lead / Eng. Software / PRIV / EM).
+2. Manter débitos não bloqueantes rastreados para iteração.
+3. Antes de release público, executar os bloqueantes adicionais da §5.5.
 
 ### Aprovações
 

@@ -7,6 +7,14 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-27] decision | GO para piloto interno após validação manual
+
+A rodada manual no Chrome fechou os gates obrigatórios da v0.1: FUNC/PRIV/SEG passaram em 100% dos casos aplicáveis ao piloto, os **7/7 riscos críticos** do checklist de IA foram validados e o `checklist_lancamento.md` mudou de NO-GO condicional para **GO para piloto interno**.
+
+O `T-SEG-01` (prompt injection via fala) foi validado com uma suite adversarial ampliada, incluindo cenário ideal com ruído de reunião, três variações de prompt injection, ausência de decisão e XSS/schema jailbreak. As evidências foram versionadas em `extension/reports/evidence/2026-06-27/` e consolidadas em `extension/reports/2026-06-27_test_run.md`.
+
+Ressalva não bloqueante registrada: em `injection-3.md`, o ADR descreveu o funcionamento como "captura áudio"; o produto captura **legendas/transcrição**. Débitos que continuam fora do piloto interno: onboarding `T-UX-01`, suite de regressão IA em CI, testes PERF/COMPAT formais e disclaimer LGPD polido para release público.
+
 ## [2026-06-27] ingest | Abre a fase Ressonância: 3 artefatos em v0 (hipóteses pré-piloto)
 
 Produzidos os 3 artefatos da fase **04 — Ressonância** em versão **v0**, conformes aos templates canônicos do Sinfonia. Como a fase é "Medir & Aprender" e o MVP ainda não foi a piloto, a estratégia foi **armar** a fase, não fechá-la: a IA consolida tudo que é método/definição/hipótese (🤖); as seções empíricas ficam marcadas como pendentes do piloto (🧑/🔄). Cada doc tem legenda de estado e uma seção "Pendências do piloto".
