@@ -5,6 +5,7 @@ import { getApiKey, clearApiKey } from "../shared/storage/apiKey";
 import {
   saveAdr,
   listAdrs,
+  getAdr,
   updateAdr,
   deleteAdr,
   clearAllAdrs,
@@ -307,6 +308,13 @@ onMessage(async (msg) => {
         return { type: "ERROR", message: errorMessage(err) };
       }
     }
+    case "GET_ADR": {
+      try {
+        return { type: "ADR_RECORD", record: await getAdr(msg.id) };
+      } catch (err) {
+        return { type: "ERROR", message: errorMessage(err) };
+      }
+    }
     case "UPDATE_ADR": {
       try {
         const record = await updateAdr(msg.id, msg.patch);
@@ -346,6 +354,7 @@ onMessage(async (msg) => {
     case "TRANSCRIPT_TEXT":
     case "ADR_SAVED":
     case "ADRS_LIST":
+    case "ADR_RECORD":
     case "ADR_DELETED":
     case "SECTION_REFINED":
     case "DATA_WIPED":

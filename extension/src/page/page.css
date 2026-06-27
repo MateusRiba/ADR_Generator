@@ -1,0 +1,76 @@
+/* Layout de tela cheia da página de extensão (Editor / Revisão em aba inteira).
+   Reaproveita os componentes do popup (App.css), só dando espaço a eles. */
+
+body {
+  min-width: 0; /* sobrescreve o min-width: 360px do popup */
+  background: Canvas;
+  color: CanvasText;
+}
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.page__hint {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+/* A página dá largura total aos campos do Editor (que no popup ficam estreitos). */
+.page .view {
+  gap: 14px;
+}
+
+/* Revisão de transcrição em tela cheia: textarea alta. */
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 70vh;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px 14px;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  resize: vertical;
+}
+
+.review__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.review__count {
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  opacity: 0.75;
+  margin-right: auto;
+}

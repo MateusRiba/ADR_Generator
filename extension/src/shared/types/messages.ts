@@ -43,6 +43,8 @@ export type RuntimeMessage =
   // ── CRUD de ADRs (Etapas 9 e 11) ──────────────────────────────────────────
   | { type: "LIST_ADRS" }
   | { type: "ADRS_LIST"; records: AdrRecord[] }
+  | { type: "GET_ADR"; id: string }
+  | { type: "ADR_RECORD"; record: AdrRecord | null }
   | { type: "UPDATE_ADR"; id: string; patch: AdrPatch }
   | { type: "DELETE_ADR"; id: string }
   | { type: "ADR_DELETED"; id: string }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { sendMessage } from "../../shared/runtime/messaging";
 import type { AdrRecord } from "../../shared/storage/adrs";
 import { TRANSCRIPT_CAP } from "../../shared/config";
+import { openFullPage } from "../lib/openPage";
 
 interface CaptureProps {
   apiKeyReady: boolean | null;
@@ -17,22 +18,6 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
   const [generating, setGenerating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Modo redação (P2): transcrição carregada para revisão/edição antes do envio.
-  // `null` = usuário ainda não abriu a revisão → geração usa o buffer do SW.
-  const [transcript, setTranscript] = useState<string | null>(null);
-  // Abre/fecha a seção de revisão. Auto-abre quando a captura para com conteúdo
-  // pendente (resposta "Só no popup": ao encerrar — inclusive pelo box no Meet —
-  // a revisão da transcrição aparece automaticamente).
-  const [reviewOpen, setReviewOpen] = useState(false);
-
-  const openReview = useCallback(async () => {
-    try {
-      const r = await sendMessage({ type: "GET_TRANSCRIPT" });
-      if (r.type === "TRANSCRIPT_TEXT") setTranscript(r.text);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
-  }, []);
 
   const refreshState = useCallback(async () => {
     try {
@@ -68,17 +53,6 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
     chrome.runtime.onMessage.addListener(listener);
     return () => chrome.runtime.onMessage.removeListener(listener);
   }, [refreshState]);
-
-  // Captura parada com transcrição pendente → abre a revisão e carrega o texto uma
-  // vez. Dispara tanto no Stop pelo popup quanto pelo overlay no Meet (o SW agora
-  // faz broadcast do CAPTURE_STATE em ambos). Não reabre se o usuário fechou (guard
-  // por `transcript === null`).
-  useEffect(() => {
-    if (!capturing && charCount > 0 && transcript === null) {
-      setReviewOpen(true);
-      void openReview();
-    }
-  }, [capturing, charCount, transcript, openReview]);
 
   async function confirmStart() {
     if (!consentChecked) return;
@@ -118,29 +92,21 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         setCapturing(r.capturing);
         setCharCount(r.charCount);
         setTruncated(r.truncated);
-        setTranscript(null);
-        setReviewOpen(false);
       }
     } finally {
       setBusy(false);
     }
   }
 
+  // Caminho rápido: gera direto do buffer do SW. Para revisar/editar a transcrição
+  // antes (modo redação P2), o usuário abre a aba de revisão em tela cheia.
   async function handleGenerate() {
     setError(null);
     setGenerating(true);
     try {
-      // Se o usuário revisou, envia o texto editado (trechos removidos não saem,
-      // P2); senão, omite e o SW usa o buffer bruto.
-      const r = await sendMessage(
-        transcript !== null
-          ? { type: "GENERATE_ADR", transcript }
-          : { type: "GENERATE_ADR" },
-      );
+      const r = await sendMessage({ type: "GENERATE_ADR" });
       if (r.type === "ADR_SAVED") {
         setCharCount(0);
-        setTranscript(null);
-        setReviewOpen(false);
         onGenerated(r.record);
       } else if (r.type === "ERROR") {
         setError(r.message);
@@ -189,31 +155,13 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         </button>
       ) : charCount > 0 ? (
         <>
-          <details
-            className="capture__review"
-            open={reviewOpen}
-            onToggle={(e) => {
-              const open = (e.target as HTMLDetailsElement).open;
-              setReviewOpen(open);
-              if (open && transcript === null) void openReview();
-            }}
+          <button
+            className="popup__button"
+            type="button"
+            onClick={() => openFullPage("view=review")}
           >
-            <summary>Revisar transcrição antes de enviar</summary>
-            <p className="popup__hint popup__hint--muted">
-              Remova trechos sensíveis antes de gerar — o que você apagar aqui
-              não é enviado ao Gemini.
-            </p>
-            {transcript === null ? (
-              <p className="popup__hint popup__hint--muted">Carregando…</p>
-            ) : (
-              <textarea
-                className="field__textarea"
-                rows={8}
-                value={transcript}
-                onChange={(e) => setTranscript(e.target.value)}
-              />
-            )}
-          </details>
+            Revisar transcrição (tela cheia)
+          </button>
           <button
             className="popup__button popup__button--primary"
             type="button"

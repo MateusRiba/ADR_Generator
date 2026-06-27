@@ -3,16 +3,15 @@ import "./App.css";
 import { isApiKeySet } from "../shared/storage/apiKey";
 import type { AdrRecord } from "../shared/storage/adrs";
 import { Capture } from "./views/Capture";
-import { Editor } from "./views/Editor";
 import { History } from "./views/History";
 import { Settings } from "./views/Settings";
+import { openFullPage } from "./lib/openPage";
 
-type View = "capture" | "editor" | "history" | "settings";
+type View = "capture" | "history" | "settings";
 
 export function App() {
   const { version } = chrome.runtime.getManifest();
   const [view, setView] = useState<View>("capture");
-  const [activeAdr, setActiveAdr] = useState<AdrRecord | null>(null);
   const [apiKeyReady, setApiKeyReady] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -21,9 +20,10 @@ export function App() {
       .catch(() => setApiKeyReady(false));
   }, []);
 
+  // Editor e revisão vivem numa aba inteira (página da extensão), não mais no
+  // popup estreito. Abrir um ADR = abrir a página do Editor numa aba.
   function openEditor(record: AdrRecord) {
-    setActiveAdr(record);
-    setView("editor");
+    openFullPage(`view=editor&id=${encodeURIComponent(record.id)}`);
   }
 
   return (
@@ -40,15 +40,6 @@ export function App() {
           onClick={() => setView("capture")}
         >
           Captura
-        </button>
-        <button
-          type="button"
-          className={`tabs__btn ${view === "editor" ? "tabs__btn--active" : ""}`}
-          onClick={() => setView("editor")}
-          disabled={!activeAdr}
-          title={activeAdr ? "" : "Gere ou abra um ADR primeiro"}
-        >
-          Editor
         </button>
         <button
           type="button"
@@ -84,12 +75,6 @@ export function App() {
       {view === "capture" && (
         <Capture apiKeyReady={apiKeyReady} onGenerated={openEditor} />
       )}
-      {view === "editor" &&
-        (activeAdr ? (
-          <Editor record={activeAdr} onSaved={setActiveAdr} />
-        ) : (
-          <p className="popup__hint">Nenhum ADR aberto.</p>
-        ))}
       {view === "history" && <History onOpen={openEditor} />}
       {view === "settings" && <Settings onChanged={setApiKeyReady} />}
     </main>

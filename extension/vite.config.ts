@@ -8,6 +8,11 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    rollupOptions: {
+      // Página full-screen (Editor/Revisão em aba inteira). O crxjs cuida do
+      // popup/SW/content via manifest; entradas HTML extras vão aqui.
+      input: { page: "src/page/index.html" },
+    },
   },
   server: {
     host: "localhost",

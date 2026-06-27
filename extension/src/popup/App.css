@@ -449,20 +449,6 @@ body {
   margin-top: 6px;
 }
 
-/* ── Modo redação (revisão de transcrição antes do envio) ──────────────── */
-.capture__review summary {
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  opacity: 0.8;
-  margin-bottom: 6px;
-}
-
-.capture__review .field__textarea {
-  max-height: 200px;
-  overflow: auto;
-}
-
 /* ── Histórico ────────────────────────────────────────────────────────── */
 .history__search {
   width: 100%;
