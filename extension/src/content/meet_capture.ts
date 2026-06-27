@@ -69,12 +69,17 @@ function findContainer(): HTMLElement | null {
   return null;
 }
 
+function normalize(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
 /**
- * Texto das legendas sem ícones/controles. Não usa `innerText` direto porque a
+ * Texto de um elemento sem ícones/controles. Não usa `innerText` direto porque a
  * região pode conter ícones (Material/Symbols viram texto via ligature, ex.:
- * "settings") e botões. Percorre os nós de texto pulando subárvores não-texto.
+ * "settings") e botões. Percorre os nós de texto pulando subárvores não-texto e
+ * separando elementos por espaço (junta o nome do falante à fala corretamente).
  */
-function extractCaptionText(container: HTMLElement): string {
+function textOf(el: HTMLElement): string {
   let out = "";
   const walk = (node: Node): void => {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -82,17 +87,53 @@ function extractCaptionText(container: HTMLElement): string {
       return;
     }
     if (node.nodeType !== Node.ELEMENT_NODE) return;
-    const el = node as HTMLElement;
-    if (el.matches(NON_TEXT_SELECTOR)) return;
-    for (const child of el.childNodes) walk(child);
-    out += " "; // separa elementos (ex.: nome do falante × fala); normalize colapsa
+    const e = node as HTMLElement;
+    if (e.matches(NON_TEXT_SELECTOR)) return;
+    for (const child of e.childNodes) walk(child);
+    out += " ";
   };
-  walk(container);
-  return out;
+  walk(el);
+  return normalize(out);
 }
 
-function normalize(text: string): string {
-  return text.replace(/\s+/g, " ").trim();
+/**
+ * Extrai a transcrição da região, atribuindo o falante quando reconhece a
+ * estrutura de linhas do Meet: cada linha tem um bloco com o avatar (`<img>`) +
+ * nome e o texto da fala. Resultado por linha: `(Nome): fala`. Se a estrutura não
+ * casar (Meet mudou a marcação), cai no texto plano — sem regressão na captura.
+ */
+function extractCaptionText(container: HTMLElement): string {
+  const rows = Array.from(container.children).filter(
+    (el): el is HTMLElement => el instanceof HTMLElement,
+  );
+  // Só tratamos como linhas de legenda se ALGUMA tiver avatar; senão, plano.
+  if (!rows.some((r) => r.querySelector("img"))) return textOf(container);
+
+  const lines: string[] = [];
+  for (const row of rows) {
+    const kids = Array.from(row.children).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement,
+    );
+    // Bloco do falante = o que contém o avatar; o nome é o texto dele.
+    const speaker = kids.find((k) => k.querySelector("img"));
+    const name = speaker ? textOf(speaker) : "";
+    const speech = speaker
+      ? kids
+          .filter((k) => k !== speaker)
+          .map(textOf)
+          .filter(Boolean)
+          .join(" ")
+      : "";
+    // Só prefixa quando há nome E fala separados; caso contrário, linha plana
+    // (continuação de fala sem avatar, ou bloco único) — nunca perde conteúdo.
+    if (name && speech) {
+      lines.push(`(${name}): ${speech}`);
+    } else {
+      const flat = textOf(row);
+      if (flat) lines.push(flat);
+    }
+  }
+  return lines.filter(Boolean).join("\n");
 }
 
 /**
@@ -118,7 +159,7 @@ function newPortion(tail: string, current: string): string {
 function flushCaptions(): void {
   const container = findContainer();
   if (!container) return;
-  const current = normalize(extractCaptionText(container));
+  const current = extractCaptionText(container); // já normalizado, com 1 linha/falante
   if (!current) return;
   const delta = newPortion(emittedTail, current).trim();
   if (!delta) return;
