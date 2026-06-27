@@ -52,7 +52,30 @@ const STYLE = `
     align-items: center;
     gap: 8px;
     padding: 12px 14px 8px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
   }
+  .header.dragging { cursor: grabbing; }
+  .header-actions { display: flex; gap: 2px; flex: 0 0 auto; }
+  .iconbtn {
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1;
+    font-weight: 700;
+    padding: 2px 7px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: #5f6368;
+    cursor: pointer;
+  }
+  .iconbtn:hover { background: rgba(0, 0, 0, 0.06); }
+  .card.minimized { width: auto; }
+  .card.minimized .started,
+  .card.minimized .body,
+  .card.minimized .notice,
+  .card.minimized .footer { display: none; }
   .dot {
     width: 10px;
     height: 10px;
@@ -161,6 +184,58 @@ function formatElapsed(ms: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+/**
+ * Permite arrastar o card pela barra de título. No primeiro arrasto troca o
+ * posicionamento de `right/bottom` (padrão) para `left/top` absoluto e mantém o
+ * card dentro da viewport. Cliques nos botões do header (`.iconbtn`) não arrastam.
+ */
+function enableDrag(card: HTMLElement, header: HTMLElement): void {
+  let dragging = false;
+  let startX = 0;
+  let startY = 0;
+  let origLeft = 0;
+  let origTop = 0;
+
+  header.addEventListener("pointerdown", (e) => {
+    if ((e.target as HTMLElement).closest(".iconbtn")) return; // botões não arrastam
+    const rect = card.getBoundingClientRect();
+    origLeft = rect.left;
+    origTop = rect.top;
+    card.style.left = `${rect.left}px`;
+    card.style.top = `${rect.top}px`;
+    card.style.right = "auto";
+    card.style.bottom = "auto";
+    startX = e.clientX;
+    startY = e.clientY;
+    dragging = true;
+    header.classList.add("dragging");
+    header.setPointerCapture(e.pointerId);
+  });
+
+  header.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const maxX = Math.max(0, window.innerWidth - card.offsetWidth);
+    const maxY = Math.max(0, window.innerHeight - card.offsetHeight);
+    const nx = origLeft + (e.clientX - startX);
+    const ny = origTop + (e.clientY - startY);
+    card.style.left = `${Math.min(Math.max(0, nx), maxX)}px`;
+    card.style.top = `${Math.min(Math.max(0, ny), maxY)}px`;
+  });
+
+  const end = (e: PointerEvent): void => {
+    if (!dragging) return;
+    dragging = false;
+    header.classList.remove("dragging");
+    try {
+      header.releasePointerCapture(e.pointerId);
+    } catch {
+      /* ponteiro já liberado */
+    }
+  };
+  header.addEventListener("pointerup", end);
+  header.addEventListener("pointercancel", end);
+}
+
 function renderBody(h: OverlayHandle): void {
   h.body.replaceChildren();
   if (h.lines.length === 0) {
@@ -245,7 +320,26 @@ export function showOverlay(opts: { startedAt: number; onStop: () => void }): vo
   const timer = document.createElement("span");
   timer.className = "timer";
   timer.textContent = "00:00";
-  header.append(dot, title, timer);
+
+  const actions = document.createElement("div");
+  actions.className = "header-actions";
+  const minBtn = document.createElement("button");
+  minBtn.className = "iconbtn";
+  minBtn.type = "button";
+  minBtn.textContent = "–";
+  minBtn.setAttribute("aria-label", "Minimizar a caixa de gravação");
+  minBtn.addEventListener("click", () => {
+    const min = card.classList.toggle("minimized");
+    minBtn.textContent = min ? "☐" : "–";
+    minBtn.setAttribute(
+      "aria-label",
+      min ? "Expandir a caixa de gravação" : "Minimizar a caixa de gravação",
+    );
+  });
+  actions.append(minBtn);
+  header.append(dot, title, timer, actions);
+
+  enableDrag(card, header);
 
   const started = document.createElement("div");
   started.className = "started";
