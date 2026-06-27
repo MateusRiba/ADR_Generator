@@ -7,6 +7,18 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-27] ingest | Abre a fase Ressonância: 3 artefatos em v0 (hipóteses pré-piloto)
+
+Produzidos os 3 artefatos da fase **04 — Ressonância** em versão **v0**, conformes aos templates canônicos do Sinfonia. Como a fase é "Medir & Aprender" e o MVP ainda não foi a piloto, a estratégia foi **armar** a fase, não fechá-la: a IA consolida tudo que é método/definição/hipótese (🤖); as seções empíricas ficam marcadas como pendentes do piloto (🧑/🔄). Cada doc tem legenda de estado e uma seção "Pendências do piloto".
+
+- **`canvas_metricas_escala_impacto.md`** (template Scale & Impact, 10 seções): objetivo do monitoramento, métricas de uso/desempenho/satisfação **definidas** a partir dos KPIs de `canvas_estrategia_acao.md` §3–4 e dos sinais local-first de `canvas_testes_validacao.md` §9 (+ alvos `T-PERF-*`); impacto no negócio e valores medidos pendentes. Ferramentas: local-first, zero analytics externo. Playbook se-então ligando métrica→ação→artefato. **Ponto crítico:** a instrumentação precisa ser ligada *antes* do piloto, senão não há dado a coletar.
+- **`canvas_planejamento_escalabilidade.md`** (template Scalability, 8 seções): a propriedade central é que escalar nº de usuários **não muda infra** (cada navegador é isolado, BYOK) — o zero-backend só rompe com colaboração ou telemetria agregada (decisões de negócio explícitas). Fórmula de custo paramétrica (preço/volume reais pendentes); riscos de escala e limiares que disparam decisão de arquitetura; testes de escala já possíveis vs. pós-piloto.
+- **`painel_feedback_insights.md`** (template Feedback Panel, 5 seções): objetivo do ciclo (pergunta primária + sub-perguntas por persona) e fontes/métodos de coleta sem backend (issues, micro-survey opt-in local, entrevistas, telemetria local-first, suite de regressão de falhas reais) **desenhados**; dados brutos/insights/ações pendentes do piloto — tabelas pré-semeadas com hipóteses a investigar e candidatos de backlog herdados de `prompt_design_record.md` §7 e do checklist de riscos.
+
+Atualizados os índices (`docs/README.md` com status 🟡 v0; `docs/04_ressonancia/README.md`). O destravamento da fase é o **piloto interno** (gate `checklist_lancamento.md` §5 → GO).
+
+---
+
 ## [2026-06-27] ingest | Fecha a fase Ensaio: Intelligence Strategy Record + Checklist de Lançamento
 
 Produzidos os 2 artefatos que faltavam da fase **03 — Ensaio**, levando-a de 3/5 para **5/5 (concluída)**. Ambos consolidam material já disperso nos canvases existentes — não introduzem requisito novo, formalizam o que já estava decidido/implementado.

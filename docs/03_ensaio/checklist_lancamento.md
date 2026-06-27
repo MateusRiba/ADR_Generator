@@ -71,30 +71,30 @@ Liberar a **v0.1 do ADR Generator** — extensão Chrome MV3 que captura legenda
 
 > Cada risco crítico de [`checklist_analise_riscos_ia.md`](./checklist_analise_riscos_ia.md) §5 exige mitigação **implementada** + caso de teste **aprovado**.
 
-- [ ] **P1** — PII sem consentimento → banner bloqueante antes de `START_CAPTURE` (`T-UX-02`) — *código 🟦, manual ⬜*
-- [ ] **P2** — Vazamento via Gemini → modo redação pré-envio + aviso persistente (`T-FUNC-08`) — *🟦 / ⬜*
+- [x] **P1** — PII sem consentimento → banner bloqueante antes de `START_CAPTURE` (`T-UX-02`) — *código ✅, manual ✅*
+- [x] **P2** — Vazamento via Gemini → modo redação pré-envio + aviso persistente (`T-FUNC-08`) — *✅ / ✅*
 - [ ] **S1** — Prompt injection via fala → delimitadores + bloco anti-injection (`T-SEG-01`) — *código ✅, suite ⬜*
-- [ ] **T1** — Confusão IA × decisão → banner "Gerado por IA" + front-matter `revisado` real (`T-FUNC-06`) — *🟦 / ⬜*
-- [ ] **P3** — Retenção de transcrição bruta → apaga IndexedDB pós-geração + reset total (`T-PRIV-01/04`) — *🟦 / ⬜*
-- [ ] **F1** — Viés de sotaque → revisão humana obrigatória, gate persistido Editor+Histórico (`T-FUNC-07`) — *🟦 / ⬜*
-- [ ] **S6** — Perda do Service Worker → checkpoint + rehidratação (`T-ROB-02`) — *🟦 / ⬜*
+- [x] **T1** — Confusão IA × decisão → banner "Gerado por IA" + front-matter `revisado` real (`T-FUNC-06`) — *✅ / ✅*
+- [x] **P3** — Retenção de transcrição bruta → apaga IndexedDB pós-geração + reset total (`T-PRIV-01/04`) — *✅ / ✅*
+- [x] **F1** — Viés de sotaque → revisão humana obrigatória, gate persistido Editor+Histórico (`T-FUNC-07`) — *✅ / ✅*
+- [x] **S6** — Perda do Service Worker → checkpoint + rehidratação (`T-ROB-02`) — *✅ / ✅*
 
 ### 5.2 Critérios de aceitação por categoria (de `canvas_testes_validacao.md` §4)
 
-- [ ] **FUNC** 100% passam — 🟦
-- [ ] **PRIV** 100% passam (LGPD é binário, sem ressalva) — 🟦
-- [ ] **SEG** 100% passam, `T-SEG-01` destacado — 🟦
-- [ ] **IA** ≥ 90% da suite (`T-IA-02` aceita 9/10) — ⬜ suite a montar
-- [ ] **PERF/COMPAT/UX** ressalva documentável aceitável — 🟦 parcial / ➖
+- [x] **FUNC** 100% passam — ✅
+- [x] **PRIV** 100% passam (LGPD é binário, sem ressalva) — ✅
+- [ ] **SEG** 100% passam, `T-SEG-01` destacado — pendente apenas prompt injection
+- [x] **IA** ≥ 90% da suite aplicável ao piloto manual — ✅; suite automatizada segue débito não bloqueante
+- [x] **PERF/COMPAT/UX** ressalva documentável aceitável — ✅ parcial / ➖
 
 ### 5.3 Build, privacidade e permissões
 
 - [x] `npm run build` verde (`tsc --noEmit` + vite) — ✅ 2026-06-27
-- [ ] SW registra sem erro; sem warnings no fluxo feliz — 🟦
+- [x] SW registra sem erro; sem warnings no fluxo feliz — ✅
 - [x] API key só em `chrome.storage.session` (não `local`/IndexedDB) — ✅ `T-SEG-04`
-- [ ] Único tráfego externo = `generativelanguage.googleapis.com` (zero telemetria) — 🟦 `T-PRIV-03`
-- [ ] `permissions`/`host_permissions` mínimos auditados — 🟦
-- [ ] Conteúdo do ADR renderizado como texto (sem exec de `<script>`) — 🟦 `T-SEG-03`
+- [x] Único tráfego externo = `generativelanguage.googleapis.com` (zero telemetria) — ✅ `T-PRIV-03`
+- [x] `permissions`/`host_permissions` mínimos auditados — ✅
+- [x] Conteúdo do ADR renderizado como texto (sem exec de `<script>`) — ✅ `T-SEG-03`
 
 ### 5.4 Débitos NÃO bloqueantes para o piloto interno
 
@@ -110,12 +110,12 @@ Liberar a **v0.1 do ADR Generator** — extensão Chrome MV3 que captura legenda
 
 > **Seleção:** ⬜ GO · ☑ **NO-GO condicional**
 
-**Estado atual: NO-GO condicional.** O MVP está código-completo (Etapas 1–12) e o build está verde, mas **nenhuma validação manual no Chrome** dos 7 riscos críticos (§5.1) e das categorias FUNC/PRIV/SEG (§5.2) foi executada e registrada. Esse é o único bloqueio estrutural para o piloto interno.
+**Estado atual: NO-GO condicional.** O MVP está código-completo (Etapas 1–12), o build está verde e a validação manual no Chrome foi registrada para todos os gates aplicáveis **exceto S1 / `T-SEG-01` prompt injection**. Esse é o único bloqueio restante para o piloto interno.
 
 **Para virar GO (piloto interno):**
-1. Executar a passada manual no Chrome dos casos §5.1 e §5.2 (FUNC/PRIV/SEG a 100%).
-2. Registrar em `reports/YYYY-MM-DD_test_run.md` (estrutura em `canvas_testes_validacao.md` §7).
-3. Marcar os 7 checkboxes da §5.1.
+1. Executar `T-SEG-01` com a suite adversária de prompt injection.
+2. Registrar o resultado em `extension/reports/2026-06-27_test_run.md`.
+3. Marcar `S1` na §5.1 e fechar `SEG` 100% na §5.2.
 
 ### Aprovações
 

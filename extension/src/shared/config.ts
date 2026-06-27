@@ -5,6 +5,19 @@
 export const TRANSCRIPT_CAP = 30_000;
 
 /**
+ * Heurística de caracteres por token usada para estimar o consumo da transcrição
+ * antes do envio à Gemini. ~4 chars/token é a aproximação padrão para PT/EN e é
+ * coerente com o cap (30.000 chars ≈ 7.500 tokens). É só uma estimativa visual —
+ * a contagem real depende do tokenizer do modelo.
+ */
+export const CHARS_PER_TOKEN = 4;
+
+/** Estimativa aproximada de tokens para uma dada contagem de caracteres. */
+export function estimateTokens(charCount: number): number {
+  return Math.ceil(charCount / CHARS_PER_TOKEN);
+}
+
+/**
  * Intervalo mínimo entre escritas do buffer no IndexedDB. Evita gravar a cada
  * chunk; persiste no máximo a cada 30s para sobreviver à reciclagem do SW (S6).
  */

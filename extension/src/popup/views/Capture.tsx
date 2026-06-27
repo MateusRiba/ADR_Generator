@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { sendMessage } from "../../shared/runtime/messaging";
 import type { AdrRecord } from "../../shared/storage/adrs";
-import { TRANSCRIPT_CAP } from "../../shared/config";
+import { TRANSCRIPT_CAP, estimateTokens } from "../../shared/config";
 import { openFullPage } from "../lib/openPage";
 
 interface CaptureProps {
@@ -141,6 +141,12 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         </span>
         <span className="popup__char-count">
           {charCount.toLocaleString("pt-BR")} caracteres
+          <span
+            className="popup__token-count"
+            title="Estimativa aproximada (~4 caracteres por token) do que será enviado à Gemini. A contagem real depende do tokenizer do modelo."
+          >
+            {" "}· ~{estimateTokens(charCount).toLocaleString("pt-BR")} tokens
+          </span>
         </span>
       </div>
 
@@ -185,13 +191,22 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
           )}
         </>
       ) : (
-        <button
-          className="popup__button popup__button--primary"
-          type="button"
-          onClick={() => setConsentOpen(true)}
-        >
-          Iniciar captura
-        </button>
+        <>
+          <button
+            className="popup__button popup__button--primary"
+            type="button"
+            onClick={() => setConsentOpen(true)}
+          >
+            Iniciar captura
+          </button>
+          <button
+            className="popup__button"
+            type="button"
+            onClick={() => openFullPage("view=review")}
+          >
+            Abrir cenários de validação
+          </button>
+        </>
       )}
 
       {truncated && (
