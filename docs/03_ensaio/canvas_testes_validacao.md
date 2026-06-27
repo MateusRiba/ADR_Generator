@@ -42,8 +42,9 @@ Em uma frase: **um engenheiro instala a extensão, participa de uma reunião rea
 | `T-FUNC-03` | Refinamento por seção (Ideia G) | ADR gerado em `T-FUNC-01`. | Clicar "expandir alternativas". | Apenas `alternativas[]` muda; demais campos byte-idênticos. |
 | `T-FUNC-04` | Diversidade de papéis | Transcrição com PM falante feminina e Dev masculino. | Gerar ADR. | Avaliação humana: ambos têm peso comparável em `alternativas` e `contexto`. |
 | `T-FUNC-05` | Ausência de decisão | Transcrição em que o grupo adia: "vamos pensar e voltar semana que vem". | Gerar ADR. | `decisao === "AUSÊNCIA DE DECISÃO"`; alternativas corretamente populadas. **Cobre Experimento 2 do canvas de experimentos.** |
-| `T-FUNC-06` | Disclaimer no export | Qualquer ADR. | Exportar `.md`. | Rodapé com texto exato *"Gerado por IA — revisar antes de versionar"* + YAML front-matter `gerado_por: adr_generator_vX.Y, revisado: false`. **Mitiga T1.** |
-| `T-FUNC-07` | Revisão obrigatória de `decisao` | Qualquer ADR gerado. | Tentar clicar "Exportar" sem editar/aceitar `decisao`. | Botão desabilitado; tooltip explicando o motivo. **Mitiga F1.** |
+| `T-FUNC-06` | Disclaimer no export | Qualquer ADR revisado. | Exportar `.md`. | Rodapé com texto exato *"Gerado por IA — revisar antes de versionar"* + YAML front-matter `gerado_por: adr_generator_vX.Y` e `revisado: <valor real>` (true se revisado). **Mitiga T1.** |
+| `T-FUNC-07` | Revisão obrigatória antes do export (persistida) | Qualquer ADR gerado. | Tentar exportar sem marcar revisado, no Editor **e** no Histórico. | Botão "Exportar .md" desabilitado nos dois lugares (tooltip + badge "não revisado" no Histórico); habilita só após "Marcar como revisado" no banner do Editor; o estado persiste ao reabrir. **Mitiga F1.** |
+| `T-FUNC-10` | Editor/revisão em aba inteira | ADR no Histórico ou captura parada. | "Abrir" um ADR / "Revisar transcrição (tela cheia)". | Abre página de extensão em aba (largura total); editar campos salva via SW; gerar na aba de revisão redireciona a mesma aba para o Editor. |
 | `T-FUNC-08` | Modo redação pré-envio | Transcrição com trecho marcado como "remover antes". | Editar transcrição na UI, gerar ADR. | Trecho removido não aparece no ADR nem na payload da chamada Gemini (verificado em `chrome.devtools` Network). **Mitiga P2.** |
 | `T-FUNC-09` | Histórico local | 5 ADRs gerados. | Abrir `History View`, buscar por título. | Lista exibe os 5; busca por substring funciona. |
 
@@ -186,8 +187,9 @@ Para liberar v0.1 internamente:
 | Caso | Estado |
 |---|---|
 | `T-IA-01` (regressão Garnet/Redis) | ✅ Aprovado em 2026-05-27 — ver `canvas_design_experimentos.md` §6. |
-| `T-FUNC-06` (disclaimer + front-matter `gerado_por`/`revisado: false`) | 🟦 Implementado 2026-06-27 (`formatter.ts`). |
-| `T-FUNC-07` (revisão obrigatória da `decisao` antes do export) | 🟦 Implementado 2026-06-27 (`Editor.tsx`). Mitiga F1. |
+| `T-FUNC-06` (disclaimer + front-matter `gerado_por`/`revisado` real) | 🟦 Implementado 2026-06-27 (`formatter.ts`). |
+| `T-FUNC-07` (revisão obrigatória antes do export, **persistida**, Editor+Histórico) | 🟦 Implementado 2026-06-27 (`adrs.ts`, `Editor.tsx`, `History.tsx`). Mitiga F1/T1. |
+| `T-FUNC-10` (Editor/revisão em aba inteira) | 🟦 Implementado 2026-06-27 (`src/page/`). |
 | `T-FUNC-08` (modo redação — trecho removido não vai à Gemini) | 🟦 Implementado 2026-06-27 (`GET_TRANSCRIPT` + `Capture.tsx`). Mitiga P2. |
 | `T-IA-05` (cap de 30K + aviso "trecho cortado") | 🟦 Implementado 2026-06-27 (flag `truncated`). |
 | `T-PRIV-04` (reset total "Apagar todos os dados") | 🟦 Implementado 2026-06-27 (`WIPE_ALL_DATA`). |

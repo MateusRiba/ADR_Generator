@@ -7,6 +7,23 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-27] feature | Editor/revisão em aba inteira + export gate com revisão persistida
+
+Duas mudanças de UX/conformidade após uso real.
+
+**Editor e revisão da transcrição em aba inteira (`src/page/`):** o Editor e a revisão da transcrição saíram do popup estreito (limite ~600px) para uma **página de extensão dedicada**, aberta em aba via `chrome.tabs.create` (sem permissão nova). `Page.tsx` roteia por query: `?view=editor&id=<id>` (busca via nova mensagem **`GET_ADR`/`ADR_RECORD`** e reusa o componente `Editor` sem mudança de lógica) e `?view=review` (textarea alta `min-height:70vh`, modo redação P2). Vite expõe a entrada em `rollupOptions.input.page`. O popup deixou de ter a aba/view Editor (agora **Captura | Histórico | ⚙**); abrir um ADR abre a aba. Em `Capture.tsx`, a revisão inline virou o botão "Revisar transcrição (tela cheia)"; mantidos o caminho rápido "Gerar ADR" (usa o buffer) e "Descartar". Helper `popup/lib/openPage.ts`.
+
+**Export gate com revisão persistida (F1/T1):** o estado "revisado" era só **em memória no Editor** — o export inline do **Histórico** ignorava o gate e o front-matter trazia `revisado: false` estático. Agora:
+- **`reviewed` persistido no registro** (`adrs.ts`): `AdrRecord.reviewed` + `AdrPatch.reviewed`; `saveAdr` grava `false`; `updateAdr` mescla; registros antigos = `false` (sem bump de `DB_VERSION`).
+- **Front-matter real:** `formatter.ts`/`exportAdr.ts` emitem `revisado: <valor>` em vez do literal `false`.
+- **Editor:** o checkbox sob a Decisão virou um **banner no topo** ("⚠ Gerado por IA — revise a decisão antes de exportar" / "✓ Revisado"), que **também cumpre T1** (rótulo "Gerado por IA" sempre visível). "Marcar como revisado" persiste via `UPDATE_ADR` (flush das edições pendentes na mesma gravação, com reversão otimista em falha). Export gated no flag persistido.
+- **Histórico:** botão ".md" desabilitado até `record.reviewed`, com badge "não revisado".
+- **Decisão (com o usuário):** só o botão explícito marca — editar a Decisão não libera sozinho (antes, editar contava como revisão).
+
+**Validação:** `npm run build` (`tsc --noEmit` + vite) passou. Testes manuais no Chrome pendentes.
+
+---
+
 ## [2026-06-27] feature | Overlay de gravação na página do Meet + integrações finais
 
 Box de preview in-page durante a captura, para dar feedback visível mesmo com o popup do Chrome fechado. Implementado em sessão separada (plano `~/.claude/plans/hashed-swinging-metcalfe.md`) e reconciliado com o endurecimento pós-MVP desta data.

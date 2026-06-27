@@ -146,9 +146,10 @@ flowchart TB
 | **Storage Repository** | Background | IndexedDB API | Camada única de acesso ao Banco de Dados Local. Operações `save`, `list`, `get`, `delete` e `update` de ADRs; isola a UI dos detalhes do IndexedDB. |
 | **Markdown Formatter** | Background ou UI | JS / String Manipulation | Converte o objeto JSON validado em Markdown segundo o padrão Michael Nygard (cabeçalhos, listas, blocos), preparando o conteúdo para download `.md`. |
 | **Recording Overlay** | Content Script | JS / Shadow DOM | Box de preview injetado na página do Meet enquanto a captura está ativa: ponto pulsante, cronômetro + horário de início, últimas linhas de legenda e botão "Encerrar" (com confirmação) que dispara `STOP_CAPTURE` ao SW. Recebe `CAPTURE_TRUNCATED` para avisar do cap de 30K. Isolado por Shadow DOM contra o CSS do Meet. |
-| **Capture View** | UI | HTML/JS | Tela de controle da captura: botões `START/STOP`, indicador de tempo decorrido, contador de caracteres, modo redação pré-envio (P2) e aviso de cap atingido. |
-| **ADR Editor View** | UI | HTML/JS | Tela de edição do ADR gerado: campos editáveis para cada chave do schema, botão de refinamento por seção, export `.md` liberado só após revisão da `decisao` (F1). |
-| **History View** | UI | HTML/JS | Tela de listagem do histórico local, com busca por título e abertura de ADRs anteriores. |
+| **Capture View** | UI (popup) | HTML/JS | Tela de controle da captura: botões `START/STOP`, indicador de tempo decorrido, contador de caracteres, botão "Revisar transcrição (tela cheia)" e aviso de cap atingido. |
+| **Full-page (Page)** | UI (aba) | HTML/JS | Página de extensão dedicada aberta em aba (`chrome.tabs.create`), tira o Editor e a revisão do popup estreito. Roteia por query: `?view=editor&id` (busca via `GET_ADR`, reusa o ADR Editor View) e `?view=review` (revisão da transcrição em textarea de tela cheia — modo redação P2). |
+| **ADR Editor View** | UI | HTML/JS | Edição do ADR gerado (campos por chave do schema, refinamento por seção). **Banner persistente "Gerado por IA / Revisado"** (T1); export `.md` liberado só após "Marcar como revisado", com o flag `reviewed` persistido no registro (F1). Renderizado dentro da Full-page. |
+| **History View** | UI (popup) | HTML/JS | Listagem do histórico local, busca por título, abertura de ADRs (na aba do Editor) e export `.md` inline **gated** pelo flag `reviewed`. |
 | **Settings View** | UI | HTML/JS | Aba de configurações dentro do popup: chave da Gemini API (`storage.session`) e "Apagar todos os dados" (reset total, type-to-confirm). |
 
 ### Fluxos Internos (Geração de um ADR ponta-a-ponta)
