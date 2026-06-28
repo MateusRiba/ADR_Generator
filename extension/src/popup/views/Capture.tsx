@@ -202,9 +202,9 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
           <button
             className="popup__button"
             type="button"
-            onClick={() => openFullPage("view=review")}
+            onClick={() => openFullPage("view=review&source=paste")}
           >
-            Abrir cenários de validação
+            Colar transcrição existente
           </button>
         </>
       )}

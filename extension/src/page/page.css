@@ -72,9 +72,16 @@ body {
 }
 
 .review__temp-title {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Quando fechado, só a summary aparece; aberto, ganha respiro do conteúdo. */
+.review__temp-tests[open] .review__temp-title {
+  margin-bottom: 4px;
 }
 
 .review__scenario-grid {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { sendMessage } from "../../shared/runtime/messaging";
-import { isApiKeySet } from "../../shared/storage/apiKey";
+import { isApiKeySet, onApiKeySet } from "../../shared/storage/apiKey";
 import { TRANSCRIPT_CAP, estimateTokens } from "../../shared/config";
 
 type Phase = "loading" | "ready" | "generating" | "discarded";
@@ -323,6 +323,10 @@ function CriteriaContent({ text }: { text: string }) {
 }
 
 export function ReviewTranscript() {
+  // source=paste → fluxo de colar uma transcrição existente (fora do Meet).
+  // Sem o parâmetro → revisão da transcrição capturada ao vivo.
+  const isPaste =
+    new URLSearchParams(location.search).get("source") === "paste";
   const [phase, setPhase] = useState<Phase>("loading");
   const [transcript, setTranscript] = useState("");
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
@@ -336,6 +340,8 @@ export function ReviewTranscript() {
     isApiKeySet()
       .then(setApiKeyReady)
       .catch(() => setApiKeyReady(false));
+    // Reage à chave configurada no popup enquanto esta aba está aberta.
+    const unsubscribe = onApiKeySet(setApiKeyReady);
     (async () => {
       try {
         const r = await sendMessage({ type: "GET_TRANSCRIPT" });
@@ -348,6 +354,7 @@ export function ReviewTranscript() {
         setPhase("ready");
       }
     })();
+    return unsubscribe;
   }, []);
 
   async function handleGenerate() {
@@ -388,6 +395,14 @@ export function ReviewTranscript() {
     }
   }
 
+  // No fluxo de colar, não há buffer capturado para descartar: apenas esvazia o
+  // editor e a seleção de caso de uso, mantendo a aba aberta para um novo texto.
+  function handleClear() {
+    setTranscript("");
+    setSelectedScenarioId(null);
+    setError(null);
+  }
+
   if (phase === "loading") {
     return (
       <>
@@ -426,22 +441,25 @@ export function ReviewTranscript() {
   return (
     <section className="review">
       <header className="page__header">
-        <h1 className="page__title">Revisar transcrição</h1>
+        <h1 className="page__title">
+          {isPaste ? "Colar transcrição existente" : "Revisar transcrição"}
+        </h1>
       </header>
       <p className="page__hint">
-        Remova trechos sensíveis antes de gerar — o que você apagar aqui não é
-        enviado ao Gemini.
+        {isPaste
+          ? "Cole abaixo uma transcrição que você já tem (Google Meet, Zoom, Teams, ata de reunião…) e gere o ADR. O texto vai ao Gemini exatamente como estiver aqui — remova trechos sensíveis antes de gerar."
+          : "Remova trechos sensíveis antes de gerar — o que você apagar aqui não é enviado ao Gemini."}
       </p>
 
-      <section className="review__temp-tests" aria-label="Cenários de validação do MVP">
-        <div>
-          <h2 className="review__temp-title">Cenários de validação do MVP</h2>
-          <p className="page__hint">
-            Carregam transcrições realistas no editor para demonstrar robustez a
-            prompt injection, ausencia de decisao e conteudo adversarial.
-            Depois clique em Gerar ADR e compare com os criterios abaixo.
-          </p>
-        </div>
+      <details className="review__temp-tests" aria-label="Validar com casos de uso">
+        <summary className="review__temp-title">
+          Validar com casos de uso (cenários de teste)
+        </summary>
+        <p className="page__hint">
+          Carregam transcrições realistas no editor para demonstrar robustez a
+          prompt injection, ausência de decisão e conteúdo adversarial. Depois
+          clique em Gerar ADR e compare com os critérios abaixo.
+        </p>
         <div className="review__scenario-grid">
           {TEMP_TEST_SCENARIOS.map((scenario) => (
             <button
@@ -479,7 +497,7 @@ export function ReviewTranscript() {
             <p>Selecione um cenário para carregar a transcrição e exibir o critério correspondente.</p>
           )}
         </details>
-      </section>
+      </details>
 
       <textarea
         className="review__textarea"
@@ -508,9 +526,9 @@ export function ReviewTranscript() {
         <button
           type="button"
           className="popup__button"
-          onClick={handleDiscard}
+          onClick={isPaste ? handleClear : handleDiscard}
         >
-          Descartar
+          {isPaste ? "Limpar" : "Descartar"}
         </button>
         <button
           type="button"

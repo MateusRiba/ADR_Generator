@@ -7,6 +7,25 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-28] fix | Paridade da chave da API na pagina de revisao em tempo real
+
+A pagina de revisao em tela cheia (`extension/src/page/components/ReviewTranscript.tsx`) lia `apiKeyReady` uma unica vez na montagem. Como a chave fica em `chrome.storage.session` (volatil, compartilhada entre contextos), quem configurava a chave no popup com a aba ja aberta nao via o botao **Gerar ADR** habilitar — o estado da pagina ficava congelado em `false`.
+
+Correcao: novo helper `onApiKeySet(callback)` em `extension/src/shared/storage/apiKey.ts` que escuta `chrome.storage.onChanged` na area `session`, filtra pela chave `geminiApiKey` e dispara `present: boolean` (mantendo o nome da storage key encapsulado no modulo). O `useEffect` da revisao assina esse helper e devolve o `unsubscribe` como cleanup. Justificativa: dar **paridade** com o popup, que ja reflete a chave atual por remontar a cada abertura; agora salvar/esquecer a chave atualiza a aba aberta sem recarregar. `npx tsc --noEmit` passou.
+
+---
+
+## [2026-06-28] feature | Resignifica cenarios de validacao como fluxo de colar transcricao existente
+
+O ponto de entrada "cenarios de validacao" foi reaproveitado como fluxo primario de **colar uma transcricao existente** (fora do Meet: Zoom, Teams, ata etc.), mantendo a validacao por casos de uso como opcao secundaria.
+
+- **`extension/src/popup/views/Capture.tsx`**: botao "Abrir cenarios de validacao" virou **"Colar transcricao existente"**, abrindo a pagina com `source=paste`.
+- **`extension/src/page/components/ReviewTranscript.tsx`**: titulo e dica adaptam-se a origem (`source=paste` → "Colar transcricao existente"; sem o parametro → "Revisar transcricao" da captura ao vivo). Os 6 cenarios de teste, o paragrafo explicativo e o "Criterio de aprovacao" foram preservados integralmente, porem dentro de um `<details>` colapsavel ("Validar com casos de uso"), de modo a nao poluir nem o fluxo de colar nem a revisao de captura real. O botao inferior e contextual: **Limpar** (esvazia o editor, sem buffer a descartar) no fluxo de colar, **Descartar** no fluxo de captura.
+
+Justificativa: o entry-point existia so para demonstrar robustez do prompt na apresentacao do MVP; o usuario pediu para transforma-lo em recurso de produto (gerar ADR a partir de transcricao que ja se tem) sem perder os casos de validacao. A geracao em si nao mudou (modo redacao P2, cap de 30K respeitado). `npx tsc --noEmit` passou.
+
+---
+
 ## [2026-06-28] fix | fechamento narrativo da validacao academica controlada
 
 Atualizado `extension/reports/2026-06-27_test_run.md` para substituir a narrativa de "piloto interno / Go-No-Go" por **validacao academica controlada**, mais aderente ao contexto real do trabalho de faculdade. A conclusao academica final foi registrada: o MVP atende ao escopo proposto, com ganho de esforco, ADRs estruturados, revisao humana obrigatoria, privacidade local-first e limites documentados, sem afirmar maturidade de produto em producao.
