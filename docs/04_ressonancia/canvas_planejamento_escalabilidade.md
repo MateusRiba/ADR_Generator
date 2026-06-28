@@ -6,7 +6,7 @@
 
 **Legenda:** ✅ definido no escopo academico · 🔄 testavel por cenario controlado · ➖ fora de escopo.
 
-**Evidencias ja disponiveis:** [`extension/reports/2026-06-27_test_run.md`](../../extension/reports/2026-06-27_test_run.md) validou build, fluxo funcional, privacidade, robustez do Service Worker, retry/backoff documentado e ausencia de falhas bloqueantes em 23/23 testes.
+**Evidencias ja disponiveis:** [`extension/reports/2026-06-27_test_run.md`](../../extension/reports/2026-06-27_test_run.md) validou build, fluxo funcional, privacidade, robustez do Service Worker, retry/backoff documentado e ausencia de falhas bloqueantes em 23/23 testes. Complemento de limite: ao ultrapassar o cap de 30K, a revisao em tela cheia agora pede confirmacao para cortar automaticamente o final da transcricao ou permitir corte manual; o export [`ideal-cap-30k-cortado.md`](../../extension/reports/evidence/2026-06-28/ideal-cap-30k-cortado.md) confirma que o corte final preservou a decisao principal.
 
 ---
 
@@ -28,7 +28,7 @@ O volume real do projeto e de demonstracao/teste, nao de operacao.
 |---|---|---|
 | **Demo academica** | 1 execucao ponta-a-ponta | ✅ fluxo validado no relatorio |
 | **Validacao controlada** | 2 ou 3 transcricoes diferentes | ✅ 6 cenarios com exports |
-| **Transcricao longa** | 1 caso perto/acima do cap de 30K chars | Verificar limite e mensagem de truncamento |
+| **Transcricao longa** | 1 caso perto/acima do cap de 30K chars | ✅ corte final validado em cenario ideal inflado |
 | **Historico local** | algumas dezenas de ADRs, se necessario | Mostrar busca/lista/export no IndexedDB |
 
 **Fora de escopo:** projecao por equipes, ADRs/equipe/semana, crescimento mensal, retencao de usuarios e carga multiusuario.
@@ -57,7 +57,7 @@ O volume real do projeto e de demonstracao/teste, nao de operacao.
 | **Manter zero backend** | Caminho recomendado; reduz complexidade e reforca privacidade | ✅ |
 | **BYOK (usuario informa API key)** | Mantem custo da Gemini fora do projeto e simplifica operacao | ✅ |
 | **Cap de 30K caracteres** | Controla custo/latencia; precisa ser documentado como limite | ✅ |
-| **Sumarizacao para transcricoes longas** | Boa evolucao futura se o cap prejudicar qualidade | 🔄 futuro |
+| **Sumarizacao para transcricoes longas** | Boa evolucao futura se o cap prejudicar qualidade; considerar crop + sumarizacao do excedente | 🔄 futuro |
 | **Novas fontes alem do Meet** | Possivel evolucao, mas nao necessaria para demonstracao | ➖ |
 | **Backend colaborativo** | Rompe a premissa local-first; nao justificado para faculdade | ➖ |
 
@@ -83,7 +83,7 @@ Como o projeto usa BYOK, a cobranca fica no projeto Google Cloud da chave inform
 |---|---|---|
 | Cota/erro 429 da Gemini | Pode quebrar a demo | Retry/backoff ja implementado; ter transcricao/resultado de evidencia salvo |
 | Mudanca no DOM do Meet | Pode impedir captura ao vivo | Captura validada na rodada manual; manter fixture/transcricao revisada como fallback |
-| Transcricao muito longa | Pode truncar decisao relevante | Cap visivel + documentar sumarizacao como trabalho futuro |
+| Transcricao muito longa | Pode truncar decisao relevante | Confirmar corte automatico no final; sumarizacao do excedente fica como evolucao |
 | Dependencia de API externa | Demo depende de internet/chave valida | Explicar dependencia e manter evidencias em `extension/reports/` |
 | Compartilhamento de ADRs | Nao atendido | Declarar fora de escopo; backend seria evolucao |
 | Dados sensiveis | Risco se usado em reuniao real | ✅ PRIV 4/4, consentimento, revisao previa e zero backend proprio |
@@ -97,7 +97,7 @@ Para o escopo academico, monitoramento de escala vira uma checagem de limites, n
 | Sinal | Como avaliar | Decisao |
 |---|---|---|
 | Tempo de geracao alto | Cronometrar 2 ou 3 chamadas | Documentar limite ou trocar modelo futuramente |
-| Truncamento no cap de 30K | Testar transcricao longa | Propor sumarizacao como evolucao |
+| Truncamento no cap de 30K | Confirmacao antes do envio pela tela de revisao | Sumarizacao do excedente segue como evolucao futura |
 | Falha de captura no Meet | Testar demo real ou fixture | Ajustar seletor ou usar modo revisao/transcricao |
 | Historico local pesado | Seed manual/sintetico, se necessario | Otimizar IndexedDB somente se houver problema |
 
@@ -111,7 +111,7 @@ Ambiente "escalado" aqui significa testar limites tecnicos do MVP, nao simular u
 
 | Teste | Necessario para fechar faculdade? | Estado |
 |---|---|---|
-| Transcricao longa perto do cap de 30K | Sim, se houver tempo | 🔄 |
+| Transcricao longa perto do cap de 30K | Sim | ✅ export gerado apos corte final preservou decisao central |
 | Reuniao/demo ponta-a-ponta no Meet | Sim | ✅ validado na rodada manual |
 | Historico com dezenas de ADRs | Opcional | ➖ nao necessario; historico/export foram validados no escopo funcional |
 | Centenas de ADRs no IndexedDB | Nao | ➖ |
@@ -120,7 +120,7 @@ Ambiente "escalado" aqui significa testar limites tecnicos do MVP, nao simular u
 
 **Pendencias para fechar este canvas:**
 
-1. 🔄 Executar pelo menos um caso com transcricao longa ou justificar o cap como limite conhecido.
+1. ✅ Documentar/mitigar o comportamento acima de 30K com confirmacao e corte automatico.
 2. ✅ Documentar que backend, colaboracao e metricas agregadas ficam como trabalhos futuros.
 3. ✅ Manter evidencias salvas para fallback de demonstracao caso Meet/Gemini falhem ao vivo.
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { sendMessage } from "../../shared/runtime/messaging";
 import { isApiKeySet } from "../../shared/storage/apiKey";
-import { estimateTokens } from "../../shared/config";
+import { TRANSCRIPT_CAP, estimateTokens } from "../../shared/config";
 
 type Phase = "loading" | "ready" | "generating" | "discarded";
 
@@ -352,10 +352,19 @@ export function ReviewTranscript() {
 
   async function handleGenerate() {
     setError(null);
+    let transcriptToSend = transcript;
+    if (transcriptToSend.length > TRANSCRIPT_CAP) {
+      const shouldTrim = window.confirm(
+        `A transcrição tem ${transcriptToSend.length.toLocaleString("pt-BR")} caracteres, acima do limite de ${TRANSCRIPT_CAP.toLocaleString("pt-BR")}.\n\nVocê pode cancelar para cortar manualmente a transcrição, ou aceitar para cortar automaticamente o final da transcrição até atingir o limite.`,
+      );
+      if (!shouldTrim) return;
+      transcriptToSend = transcriptToSend.slice(0, TRANSCRIPT_CAP);
+      setTranscript(transcriptToSend);
+    }
     setPhase("generating");
     try {
       // Modo redação (P2): envia o texto editado — trechos removidos não saem.
-      const r = await sendMessage({ type: "GENERATE_ADR", transcript });
+      const r = await sendMessage({ type: "GENERATE_ADR", transcript: transcriptToSend });
       if (r.type === "ADR_SAVED") {
         // Reaproveita a mesma aba: vira o Editor do ADR recém-gerado.
         location.search = `?view=editor&id=${encodeURIComponent(r.record.id)}`;

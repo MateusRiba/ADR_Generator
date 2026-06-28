@@ -7,6 +7,30 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-28] fix | fechamento narrativo da validacao academica controlada
+
+Atualizado `extension/reports/2026-06-27_test_run.md` para substituir a narrativa de "piloto interno / Go-No-Go" por **validacao academica controlada**, mais aderente ao contexto real do trabalho de faculdade. A conclusao academica final foi registrada: o MVP atende ao escopo proposto, com ganho de esforco, ADRs estruturados, revisao humana obrigatoria, privacidade local-first e limites documentados, sem afirmar maturidade de produto em producao.
+
+Tambem foram fechadas as ultimas acoes altas do `painel_feedback_insights.md`: limites assumidos na conclusao academica, narrativa corrigida para "legendas/transcricao" e conclusao final marcada como feita. O `canvas_metricas_escala_impacto.md` agora registra que nao ha pendencia aberta para fechamento do canvas.
+
+---
+
+## [2026-06-28] decision | Alimenta Ressonancia com tempos, cap 30K e refinamento por secao
+
+Complementada a fase **04 — Ressonancia** com dados academicos informados apos a rodada de testes: escrever um ADR manualmente apos uma reuniao leva aproximadamente **15-30 min**, enquanto o ADR Generator leva **5-15 s para gerar** e **2-5 min para revisar**. Esse dado fecha a metrica de reducao de esforco no `canvas_metricas_escala_impacto.md`.
+
+O limite de **30K caracteres** foi exercitado e a resposta observada foi `Erro: Gemini indisponível (HTTP 503). Tente novamente.`. A conclusao registrada e que o limite existe, mas a UX do erro e generica; recomendacao: mensagem especifica de limite e fallback futuro com **crop seguro + sumarizacao da parte excedente**.
+
+Mitigacao simples implementada: na tela de revisao da transcricao, se o texto ultrapassar `TRANSCRIPT_CAP`, a extensao exibe `window.confirm` informando que o usuario pode cancelar para cortar manualmente ou aceitar o corte automatico do final da transcricao ate atingir o cap. O service worker tambem aplica `slice(0, TRANSCRIPT_CAP)` como protecao final antes de chamar a Gemini. `npm run build` passou.
+
+Para demonstrar refinamento por secao sem criar novo cenario artificial, foi registrada uma sugestao sobre `extension/reports/evidence/2026-06-27/ideal.md`: refinar a secao **Consequencias** para incluir plano gradual de adocao, metricas de sucesso, governanca de PII no coletor, overhead de telemetria/sampling e responsabilidades de plataforma/desenvolvimento. O complemento foi adicionado ao relatorio `extension/reports/2026-06-27_test_run.md` e refletido nos tres artefatos de Ressonancia.
+
+Complemento: o resultado refinado foi versionado em `extension/reports/evidence/2026-06-28/ideal-refinado.md`. A saida preserva a decisao original (OpenTelemetry + coletor centralizado) e melhora a secao **Consequencias** com rollout, metricas de sucesso, governanca de PII/LGPD, overhead/sampling e responsabilidades entre Plataforma e Desenvolvimento. Com isso, a pendencia de refinamento por secao fica coberta para o escopo academico.
+
+Complemento 2: o cenario ideal foi inflado com lorem ipsum ate aproximadamente **30.500 caracteres** e gerado aceitando o corte automatico de cerca de **500 caracteres finais**. O resultado foi versionado em `extension/reports/evidence/2026-06-28/ideal-cap-30k-cortado.md`. A decisao central foi preservada (OpenTelemetry + coletor centralizado + sampling/mascaramento/export), com perda apenas de riqueza em detalhes finais, considerada aceitavel para o MVP academico. Com isso, o comportamento simples do cap de 30K fica validado.
+
+---
+
 ## [2026-06-27] decision | Readequa Ressonancia para validacao academica controlada
 
 Os 3 artefatos da fase **04 — Ressonancia** foram revisados para refletir o contexto real do projeto: trabalho simples de faculdade, sem grupo piloto, sem sponsor, sem operacao multi-equipe e sem necessidade de metricas longitudinais. A decisao substitui o enquadramento anterior de "piloto interno" por **validacao academica controlada**.

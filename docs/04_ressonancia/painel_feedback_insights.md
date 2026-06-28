@@ -50,7 +50,9 @@ O ciclo de feedback academico deve responder:
 | **Privacidade** | PRIV 4/4; sem transcricao bruta no IndexedDB pos-geracao; wipe limpa dados. | relatorio §1–2 | ✅ |
 | **Robustez** | ROB 5/5; buffer recuperado apos reciclo do Service Worker. | relatorio §1–2 | ✅ |
 | **Ressalva de terminologia** | `injection-3.md` citou "captura audio", mas o produto captura legendas/transcricao. | relatorio §4 | ⚠️ |
-| **Lacuna de mensuracao** | Tempo manual vs. extensao e cap 30K ainda nao foram medidos nesta rodada. | relatorio §5 / canvas metricas | 🔄 |
+| **Reducao de esforco** | ADR manual leva ~15-30 min; extensao gera em ~5-15 s e exige ~2-5 min de revisao. | validacao academica | ✅ |
+| **Cap de 30K** | Cenario ideal inflado ate ~30.500 caracteres, com corte de ~500 no final, gerou ADR valido e coerente. | [`ideal-cap-30k-cortado.md`](../../extension/reports/evidence/2026-06-28/ideal-cap-30k-cortado.md) | ✅ |
+| **Refinamento por secao** | `ideal.md` foi refinado na secao Consequencias, incluindo rollout, metricas de sucesso, governanca de PII, overhead/sampling e responsabilidades. | [`ideal-refinado.md`](../../extension/reports/evidence/2026-06-28/ideal-refinado.md) | ✅ |
 
 ---
 
@@ -66,6 +68,10 @@ O ciclo de feedback academico deve responder:
 | O prompt ja resiste a ataques basicos de instrucao embutida | Suite adversaria `T-SEG-01` aprovada | Manter esses casos como evidencia e futura regressao |
 | A qualidade minima do ADR foi demonstrada | 6 exports com estrutura Nygard e decisoes coerentes | A apresentacao pode mostrar exports reais em vez de prometer piloto futuro |
 | A terminologia "audio" precisa ser evitada | Ressalva em `injection-3.md` | Ajustar narrativa/documentacao para "legendas/transcricao" |
+| O ganho de tempo e suficiente para defender o valor academico do MVP | Manual ~15-30 min vs. extensao ~2-5 min + geracao | Usar essa comparacao na conclusao final |
+| O cap de 30K precisa de UX explicita | Erro anterior aparecia como indisponibilidade Gemini 503 | Confirmacao/corte resolve o MVP; sumarizacao fica como evolucao |
+| O refinamento por secao melhora a utilidade sem mudar a decisao | `ideal-refinado.md` preservou OpenTelemetry + coletor e detalhou consequencias acionaveis | Usar como evidencia de pos-edicao assistida por IA |
+| O corte no final e aceitavel quando a decisao aparece antes do trecho cortado | `ideal-cap-30k-cortado.md` preservou OpenTelemetry + coletor centralizado | Documentar que sumarizacao e melhor para reunioes longas reais |
 
 ---
 
@@ -75,11 +81,13 @@ O ciclo de feedback academico deve responder:
 |---|---|---|
 | Preparar 2 ou 3 transcricoes de teste | Evita depender exclusivamente de Meet ao vivo | ✅ feito, ha 6 evidencias |
 | Gerar e versionar exports `.md` como evidencia | Facilita avaliacao da qualidade | ✅ feito |
-| Cronometrar manual vs. extensao | Sustenta a tese de reducao de esforco | Media |
-| Documentar limites na apresentacao/README | Evita prometer maturidade de produto real | Alta |
+| Cronometrar manual vs. extensao | Sustenta a tese de reducao de esforco | ✅ feito: ~15-30 min vs. ~2-5 min + 5-15 s |
+| Documentar limites na apresentacao/README | Evita prometer maturidade de produto real | ✅ assumido na conclusao academica |
 | Manter suite adversarial de prompt injection como evidencia | Mostra cuidado com IA e seguranca | ✅ feito |
-| Corrigir narrativa "audio" → "legendas/transcricao" | Evita imprecisao sobre funcionamento do produto | Alta |
-| Registrar conclusao academica final no relatorio | Fecha o ciclo de feedback sem depender de usuarios reais | Alta |
+| Corrigir narrativa "audio" → "legendas/transcricao" | Evita imprecisao sobre funcionamento do produto | ✅ assumido na narrativa final |
+| Melhorar cap de 30K | Confirmar corte automatico ou permitir edicao manual | ✅ feito |
+| Refinar `ideal.md` na secao Consequencias | Demonstra uso do refinamento por secao sem inventar novo cenario | ✅ feito |
+| Registrar conclusao academica final no relatorio | Fecha o ciclo de feedback sem depender de usuarios reais | ✅ feito |
 | Sumarizacao > 30K | Evolucao futura, nao requisito atual | Baixa |
 | Backend colaborativo | Trabalho futuro somente se virar produto real | Baixa / fora de escopo |
 

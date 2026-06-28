@@ -265,6 +265,7 @@ onMessage(async (msg) => {
       // Trechos removidos na revisão não entram na payload da Gemini (P2).
       const source =
         typeof msg.transcript === "string" ? msg.transcript : buffer;
+      const cappedSource = source.slice(0, TRANSCRIPT_CAP);
       if (!source.trim()) {
         return { type: "ERROR", message: "Nenhuma transcrição capturada ainda." };
       }
@@ -273,7 +274,7 @@ onMessage(async (msg) => {
         return { type: "ERROR", message: "API key não configurada. Abra Configurações." };
       }
       try {
-        const adr = await generateAdr(source, apiKey);
+        const adr = await generateAdr(cappedSource, apiKey);
         const record = await saveAdr(adr);
         // P3: transcrição bruta apagada IMEDIATAMENTE após validação+persistência.
         await resetBuffer();
