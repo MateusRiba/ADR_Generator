@@ -2,24 +2,25 @@
 
 **Disciplina:** IF1015 — Engenharia de Software Assistida por IA (ESAIA) · CIn/UFPE
 **Semestre:** 2026.1
-**Professor(a):** `<preencher>`
-**Data de entrega:** `<preencher — referência: 2026-06-28>`
+**Professor(a):** Prof. Vinicius
+**Data de entrega:** 2026-06-28
 
 ## ADR Generator — Extensão para Google Meet que gera *Architecture Decision Records* via IA generativa
 
-**Equipe:** `<preencher — nome da equipe>`
+**Equipe:** Equipe 4
 
 | Integrante | Login / GitHub | Papel |
 |---|---|---|
-| **Cadu Falcão** *(líder)* | `kddu422` / `@CaduFalcao` | Tech Lead — arquitetura, prompt/IA, documentação Sinfonia |
-| Mateus Ribeiro | `@MateusRiba` | Backend PoC Gemini, integração, repositório |
-| Antonio Carolino | `@AntonioCar0lin0` | Apoio em produto/personas |
-| `<preencher se houver mais integrantes>` | | |
+| **Carlos Eduardo Falcão Teixeira** *(líder)* | `kddu422` / `@CaduFalcao` | Tech Lead — arquitetura, prompt/IA, documentação Sinfonia |
+| Antonio Rodrigues Pinheiro Carolino | `@AntonioCar0lin0` | Composição dos artefatos das fases 1 e 2 — Exposição e Composição |
+| Mateus Ribeiro de Albuquerque | `@MateusRiba` | Ensaio — PoC backend Gemini, integração e artefatos técnicos |
+| Bruno Henrique Ferreira Pinto | — | Ressonância — métricas, feedback, escalabilidade e economicidade |
+| Pedro Augusto Stelzer da Silva | — | Testes e validação — checklist, evidências e relatório de execução |
 
-> **Líder em destaque:** Cadu Falcão. Roster inferido do histórico de commits; **confirmar/ajustar** integrantes, logins e papéis.
+> **Líder em destaque:** Carlos Eduardo Falcão Teixeira.
 
 **Repositório Git:** <https://github.com/MateusRiba/ADR_Generator>
-(contém `README.md` com instruções de build, os 14 artefatos da metodologia Sinfonia em `docs/`, diagramas C4 em Mermaid e os relatórios de teste em `extension/reports/`)
+(contém `README.md`, `BUILD.md`, os 14 artefatos da metodologia Sinfonia em `docs/`, diagramas C4 em Mermaid e os relatórios de teste em `extension/reports/`)
 
 **Sistema em produção:** ➖ não aplicável — MVP distribuído como extensão *unpacked* (`Carregar sem compactação`), sem publicação na Chrome Web Store (decisão consciente, ver §6).
 
@@ -111,10 +112,10 @@ Os movimentos não foram estritamente lineares: a captura por Web Speech API pla
 
 ## 2.3 Gestão do trabalho em equipe
 
-- **Repositório único** no GitHub (`MateusRiba/ADR_Generator`), trabalho majoritariamente direto na branch `main` (projeto de equipe pequena ≤3 desenvolvedores).
+- **Repositório único** no GitHub (`MateusRiba/ADR_Generator`), trabalho majoritariamente direto na branch `main` (projeto acadêmico de equipe enxuta).
 - **Roadmap de 12 etapas atômicas** (`docs/roadmap_implementacao.md`), cada uma com objetivo, tarefas, critério de pronto testável e mapeamento aos riscos — o "board de tarefas" do projeto.
 - **Desenvolvimento assistido por IA** (Claude Code / Codex) como par de programação em todas as fases, com revisão humana obrigatória das saídas.
-- **Papéis sobrepostos** (típico de time enxuto): Tech Lead concentrou arquitetura/prompt/docs; demais integrantes atuaram no PoC backend e em produto/personas.
+- **Papéis sobrepostos** (típico de time enxuto): a liderança técnica concentrou arquitetura/prompt/docs; Antonio ficou responsável pela composição dos artefatos das duas primeiras fases (Exposição e Composição); Mateus assumiu artefatos técnicos do Ensaio e integração Gemini; Bruno consolidou Ressonância, métricas, escalabilidade e economicidade; Pedro concentrou testes, checklist de lançamento e evidências de validação.
 
 ## 2.4 Workflow Document como documento vivo
 
@@ -361,7 +362,7 @@ Documento autoritativo: [`checklist_lancamento.md`](https://github.com/MateusRib
 - **Cenários controlados** com transcrições representativas (decisão clara, ausência de decisão, casos adversariais).
 - **Autoavaliação do autor** via checklist (23/23 testes).
 - **Comparação objetiva** entre transcrição e ADR exportado (8 evidências `.md`).
-- **Observações de professor/banca** na demonstração `<a coletar na apresentação>`.
+- **Observações de professor/banca** serão tratadas como feedback pós-demonstração, caso registradas durante a apresentação.
 
 ## 6.2 Painel de Feedback e Insights
 
@@ -404,7 +405,7 @@ A propriedade central: **escalar o nº de usuários não muda a infraestrutura**
 
 # 7. Economicidade do Desenvolvimento Assistido por IA
 
-> **Nota metodológica:** os dados desta seção foram **consolidados no Workflow Document ao final de cada fase** (Exposição, Composição, Ensaio, Ressonância), registrando por fase: tokens consumidos pelos assistentes de IA, horas humanas de trabalho e a estimativa de esforço contrafactual (sem IA). A discussão crítica dos limites desses números está em §7.5 — parte essencial desta seção.
+> **Nota metodológica:** os dados desta seção consolidam a economicidade do projeto por fase (Exposição, Composição, Ensaio, Ressonância): tokens consumidos pelos assistentes de IA, horas humanas de trabalho e estimativa de esforço contrafactual (sem IA). O diário qualitativo do desenvolvimento está no Workflow Document (§12.1); o consolidado quantitativo está neste relatório. A discussão crítica dos limites desses números está em §7.5 — parte essencial desta seção.
 
 **Base de cálculo (registrada junto com os dados de cada fase):**
 
@@ -429,7 +430,7 @@ A ferramenta operou em **assinatura de tarifa fixa**, sem custo marginal por tok
 
 ## 7.2 Camada 2 — Esforço humano real (consolidado)
 
-> **Como foi medido:** ao final de cada fase, o esforço humano foi contabilizado **por sessão de trabalho** e registrado no Workflow Document. Convenção: cada **sessão** é um bloco de trabalho contínuo (uma pausa maior que ~2 h separa sessões) e soma **30 min de preparação/contexto** ao início; o trabalho assume **100% de uso do Claude** no fluxo. As sessões coincidem com os blocos de atividade no controle de versão (commits), o que mantém a contagem **auditável**. As linhas reportadas excluem artefatos gerados (`node_modules/`, `dist/`, `package-lock.json`). A tabela por sessão abaixo é a base do total.
+> **Como foi medido:** o esforço humano foi consolidado **por sessão de trabalho** nesta seção. Convenção: cada **sessão** é um bloco de trabalho contínuo (uma pausa maior que ~2 h separa sessões) e soma **30 min de preparação/contexto** ao início; o trabalho assume **100% de uso do Claude** no fluxo. As sessões coincidem com os blocos de atividade no controle de versão (commits), o que mantém a contagem **auditável**. As linhas reportadas excluem artefatos gerados (`node_modules/`, `dist/`, `package-lock.json`). A tabela por sessão abaixo é a base do total.
 
 | Fase | Horas humanas com IA | Observações |
 |---|---:|---|
@@ -480,12 +481,13 @@ A ferramenta operou em **assinatura de tarifa fixa**, sem custo marginal por tok
 | **Saving estimado (%)** | **≈ 71%** |
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base', 'themeVariables': {'xyChart': {'plotColorPalette': '#2e8b57, #c0392b'}}}}%%
 xychart-beta
-    title "Custo estimado do projeto (R$) — COM IA vs SEM IA"
+    title "Custo estimado do projeto (R$) — COM IA (verde) vs SEM IA (vermelho)"
     x-axis ["Com IA", "Sem IA"]
     y-axis "R$" 0 --> 6000
-    bar [1568, 5408]
+    bar [1568, 0]
+    bar [0, 5408]
 ```
 
 ## 7.5 Limitações da análise (discussão crítica)
@@ -587,7 +589,7 @@ O MVP entrega a proposta central: **transforma uma transcrição em rascunho de 
 
 ## 10.3 Pontos de melhoria e sugestões
 
-- **Produto:** sumarização para reuniões >30K; CI com regressão de IA; expandir few-shot; robustez do seletor de legendas; onboarding (`T-UX-01`); criar `BUILD.md` dedicado.
+- **Produto:** sumarização para reuniões >30K; CI com regressão de IA; expandir few-shot; robustez do seletor de legendas; onboarding (`T-UX-01`); manter o `BUILD.md` como guia dedicado de execução/build.
 - **Metodologia:** instrumentar **economicidade desde o dia 1** (tokens/horas) — foi a maior lacuna deste projeto.
 
 ## 10.4 Aprendizados sobre IA generativa na prática
@@ -600,10 +602,11 @@ O MVP entrega a proposta central: **transforma uma transcrição em rascunho de 
 
 > Cada integrante deve escrever um parágrafo sobre sua contribuição e aprendizado.
 
-- **Cadu Falcão (líder):** `<preencher — ex.: condução da arquitetura, prompt design e documentação Sinfonia; aprendizado sobre rastreabilidade risco→teste e limites de MV3>`
-- **Mateus Ribeiro:** `<preencher — PoC backend Gemini, integração, repositório>`
-- **Antonio Carolino:** `<preencher — produto/personas>`
-- `<demais integrantes — preencher>`
+- **Carlos Eduardo Falcão Teixeira (líder):** `<preencher — ex.: condução da arquitetura, prompt design e documentação Sinfonia; aprendizado sobre rastreabilidade risco→teste e limites de MV3>`
+- **Antonio Rodrigues Pinheiro Carolino:** `<preencher — composição dos artefatos das fases Exposição e Composição; personas, estratégia, ideação e experimentos>`
+- **Mateus Ribeiro de Albuquerque:** `<preencher — PoC backend Gemini, integração, repositório e artefatos técnicos da fase Ensaio>`
+- **Bruno Henrique Ferreira Pinto:** `<preencher — Ressonância, métricas, feedback, escalabilidade e economicidade>`
+- **Pedro Augusto Stelzer da Silva:** `<preencher — testes, checklist de lançamento, evidências de validação e relatório de execução>`
 
 ---
 
@@ -628,7 +631,8 @@ O MVP entrega a proposta central: **transforma uma transcrição em rascunho de 
 
 O diário de bordo do desenvolvimento assistido por IA está materializado em:
 
-- [**`docs/log.md`**](https://github.com/MateusRiba/ADR_Generator/blob/main/docs/log.md) — registro cronológico append-only com justificativa de cada decisão (o *porquê*) e o fechamento de economicidade ao final de cada fase.
+- [**`docs/log.md`**](https://github.com/MateusRiba/ADR_Generator/blob/main/docs/log.md) — registro cronológico append-only com justificativa de cada decisão (o *porquê*), mudanças de escopo e validações executadas.
+- [**Seção 7 deste relatório**](#7-economicidade-do-desenvolvimento-assistido-por-ia) — consolidado quantitativo da economicidade: tokens, horas humanas reais, contrafactual humano, custos e limitações da análise.
 - [**`extension/reports/2026-06-27_test_run.md`**](https://github.com/MateusRiba/ADR_Generator/blob/main/extension/reports/2026-06-27_test_run.md) — relatório de execução de testes + complemento acadêmico (tempos, cap 30K, refinamento por seção).
 - [**Histórico de commits**](https://github.com/MateusRiba/ADR_Generator/commits/main) — `git log` (41 commits, mai–jun/2026).
 
