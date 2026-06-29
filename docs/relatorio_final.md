@@ -30,10 +30,10 @@
 
 1. [Introdução](#1-introdução)
 2. [Metodologia](#2-metodologia)
-3. [Movimento 1 — Exposição (Alinhar Estratégia)](#3-movimento-1--exposição-alinhar-estratégia)
-4. [Movimento 2 — Composição (Desenhar a Solução)](#4-movimento-2--composição-desenhar-a-solução)
-5. [Movimento 3 — Ensaio (Construir e Testar)](#5-movimento-3--ensaio-construir-e-testar)
-6. [Movimento 4 — Ressonância (Medir e Aprender)](#6-movimento-4--ressonância-medir-e-aprender)
+3. [Movimento 1 — Exposição (Alinhar Estratégia)](#3-movimento-1-—-exposição-alinhar-estratégia)
+4. [Movimento 2 — Composição (Desenhar a Solução)](#4-movimento-2-—-composição-desenhar-a-solução)
+5. [Movimento 3 — Ensaio (Construir e Testar)](#5-movimento-3-—-ensaio-construir-e-testar)
+6. [Movimento 4 — Ressonância (Medir e Aprender)](#6-movimento-4-—-ressonância-medir-e-aprender)
 7. [Economicidade do Desenvolvimento Assistido por IA](#7-economicidade-do-desenvolvimento-assistido-por-ia)
 8. [Discussões Técnicas e Estratégicas](#8-discussões-técnicas-e-estratégicas)
 9. [Considerações Éticas](#9-considerações-éticas)
@@ -347,7 +347,7 @@ Documento autoritativo: [`checklist_lancamento.md`](https://github.com/MateusRib
 
 - **Relatório de execução:** [`extension/reports/2026-06-27_test_run.md`](https://github.com/MateusRiba/ADR_Generator/blob/main/extension/reports/2026-06-27_test_run.md) — **23/23 testes aprovados** (FUNC 6/6, PRIV 4/4, SEG 4/4, IA 1/1, ROB 5/5, UX 3/3).
 - **8 exports `.md` de evidência** em [`evidence/2026-06-27/`](https://github.com/MateusRiba/ADR_Generator/tree/main/extension/reports/evidence/2026-06-27) e [`evidence/2026-06-28/`](https://github.com/MateusRiba/ADR_Generator/tree/main/extension/reports/evidence/2026-06-28): cenário ideal, 3 variações de prompt injection, ausência de decisão, XSS/schema, ADR refinado por seção e ADR gerado após corte do cap de 30K.
-- **Prints/vídeo da extensão em uso:** `<preencher — anexar capturas do Meet com overlay + Editor + export>`.
+- **Prints/vídeo da extensão em uso:** pendente de anexação no PDF final; as evidências versionadas de funcionamento estão nos exports `.md` listados acima.
 
 ---
 
@@ -375,12 +375,14 @@ Documento autoritativo: [`checklist_lancamento.md`](https://github.com/MateusRib
 | Fidelidade da decisão | preservada em todos os cenários testados (ideal, adversariais, ausência) |
 | Validade estrutural | 100% JSON parseável + 8 campos (forçado por schema) |
 | Cap de 30K | corte de ~500 chars do final preservou a decisão central |
+| Cobertura temporal real observada | **~8 min de reunião** atingiram o cap de ~30.000 caracteres (~7.500 tokens) |
 
 **Análise qualitativa (temas recorrentes):**
 
 - O **zero-backend** combina bem com o escopo e simplifica a narrativa de LGPD.
 - A **revisão humana é parte do produto**, não detalhe — o MVP deve ser apresentado como *assistente*, não decisor.
 - A **captura por legendas é útil mas frágil** (depende do DOM do Meet e do CC ligado) → manter fixtures como *fallback* de demo.
+- O produto **atende parcialmente** reuniões reais longas: no teste com falas completas e ruído cotidiano, o limite gratuito/atual de entrada foi atingido em aproximadamente **8 minutos**. Por extrapolação linear, reuniões de 30 min a 2 h podem variar de ~112.500 a ~450.000 caracteres (~28.000 a ~112.500 tokens), exigindo adequação futura para APIs/modelos pagos com maior janela de contexto, além de chunking/sumarização.
 - **Ressalva registrada:** em `injection-3.md`, o ADR descreveu o produto como "captura áudio"; o correto é "legendas/transcrição" — ajuste de narrativa.
 
 ## 6.3 Validação das hipóteses
@@ -395,11 +397,11 @@ Documento autoritativo: [`checklist_lancamento.md`](https://github.com/MateusRib
 
 ## 6.4 Decisão estratégica
 
-**Perseverar (com escopo acadêmico encerrado).** O MVP atende ao objetivo proposto: gera ADRs estruturados e fiéis, reduz esforço de forma demonstrável, aplica revisão humana obrigatória e mantém privacidade local-first. **Não** se afirma maturidade de produto em produção nem adoção validada por usuários reais. Evoluções (CI, sumarização >30K, backend colaborativo) ficam como trabalho futuro.
+**Perseverar (com escopo acadêmico encerrado), com atendimento parcial para reuniões longas.** O MVP atende ao objetivo proposto para demonstrações e reuniões curtas: gera ADRs estruturados e fiéis, reduz esforço de forma demonstrável, aplica revisão humana obrigatória e mantém privacidade local-first. Porém, o teste de produto indicou que o cap atual de ~30.000 caracteres, associado ao uso da API gratuita/atual, cobre aproximadamente **8 minutos** de reunião com falas completas e ruído. Portanto, o produto **não atende integralmente** reuniões típicas de 30 min a 2 h sem evolução técnica. **Não** se afirma maturidade de produto em produção nem adoção validada por usuários reais. Evoluções (CI, sumarização/chunking >30K, adequação para APIs/modelos pagos com maior contexto e backend colaborativo) ficam como trabalho futuro.
 
 ## 6.5 Canvas de Escalabilidade
 
-A propriedade central: **escalar o nº de usuários não muda a infraestrutura** — cada navegador é isolado e usa BYOK; não há servidor a dimensionar. O zero-backend só "rompe" com decisões de produto explícitas (colaboração, telemetria agregada, publicação na Web Store). Limites conhecidos: cap de 30K (sumarização do excedente como evolução), fragilidade do seletor de legendas, dependência da Gemini.
+A propriedade central: **escalar o nº de usuários não muda a infraestrutura** — cada navegador é isolado e usa BYOK; não há servidor a dimensionar. O zero-backend só "rompe" com decisões de produto explícitas (colaboração, telemetria agregada, publicação na Web Store). Limites conhecidos: cap de 30K, que no teste real equivaleu a cerca de **8 minutos** de reunião; sumarização/chunking do excedente e uso de APIs/modelos pagos com maior janela de contexto são evoluções necessárias para cobrir reuniões de 30 min a 2 h. Também permanecem como limites a fragilidade do seletor de legendas e a dependência da Gemini.
 
 ---
 
@@ -531,7 +533,7 @@ Os números acima sintetizam **ordens de grandeza**; sua leitura exige cautela:
 
 ## 8.4 Trade-offs entre qualidade, custo e complexidade
 
-- **Custo/latência:** o **cap de 30K** é o regulador único — limita tokens/custo previsivelmente, ao preço de truncar reuniões longas (sumarização fica como evolução).
+- **Custo/latência:** o **cap de 30K** é o regulador único — limita tokens/custo previsivelmente, ao preço de truncar reuniões longas. No teste de produto, esse cap correspondeu a cerca de **8 minutos**; para reuniões de 30 min a 2 h, a evolução natural é combinar chunking/sumarização com APIs/modelos pagos de maior janela de contexto.
 - **Qualidade vs. complexidade:** few-shot **único** mantém o prompt enxuto e barato, mas pode enviesar o estilo — *trade-off* aceito, com plano de expandir a base de exemplos.
 - **Segurança vs. UX:** API key em `storage.session` é mais segura, mas exige re-colar 1×/sessão — *trade-off* explicitado ao usuário na UI.
 
@@ -585,11 +587,11 @@ Declaramos, conforme o Código de Conduta da disciplina:
 
 ## 10.2 Avaliação da proposta de valor
 
-O MVP entrega a proposta central: **transforma uma transcrição em rascunho de ADR estruturado e fiel em segundos**, com redução de esforço demonstrável (~15–30 min → ~2–5 min de revisão). O valor é real como *assistente*; **não** substitui o julgamento humano.
+O MVP entrega parcialmente a proposta central: **transforma uma transcrição curta em rascunho de ADR estruturado e fiel em segundos**, com redução de esforço demonstrável (~15–30 min → ~2–5 min de revisão). O valor é real como *assistente*; **não** substitui o julgamento humano. Para reuniões reais mais longas, o teste mostrou limitação prática de aproximadamente **8 minutos** sob o cap atual da API gratuita/atual, exigindo evolução futura para APIs/modelos pagos com maior contexto e/ou processamento em partes.
 
 ## 10.3 Pontos de melhoria e sugestões
 
-- **Produto:** sumarização para reuniões >30K; CI com regressão de IA; expandir few-shot; robustez do seletor de legendas; onboarding (`T-UX-01`); manter o `BUILD.md` como guia dedicado de execução/build.
+- **Produto:** sumarização/chunking para reuniões >30K; adequação futura para APIs/modelos pagos com maior janela de contexto; CI com regressão de IA; expandir few-shot; robustez do seletor de legendas; onboarding (`T-UX-01`); manter o `BUILD.md` como guia dedicado de execução/build.
 - **Metodologia:** instrumentar **economicidade desde o dia 1** (tokens/horas) — foi a maior lacuna deste projeto.
 
 ## 10.4 Aprendizados sobre IA generativa na prática
@@ -600,13 +602,11 @@ O MVP entrega a proposta central: **transforma uma transcrição em rascunho de 
 
 ## 10.5 Relato individual
 
-> Cada integrante deve escrever um parágrafo sobre sua contribuição e aprendizado.
-
-- **Carlos Eduardo Falcão Teixeira (líder):** `<preencher — ex.: condução da arquitetura, prompt design e documentação Sinfonia; aprendizado sobre rastreabilidade risco→teste e limites de MV3>`
-- **Antonio Rodrigues Pinheiro Carolino:** `<preencher — composição dos artefatos das fases Exposição e Composição; personas, estratégia, ideação e experimentos>`
-- **Mateus Ribeiro de Albuquerque:** `<preencher — PoC backend Gemini, integração, repositório e artefatos técnicos da fase Ensaio>`
-- **Bruno Henrique Ferreira Pinto:** `<preencher — Ressonância, métricas, feedback, escalabilidade e economicidade>`
-- **Pedro Augusto Stelzer da Silva:** `<preencher — testes, checklist de lançamento, evidências de validação e relatório de execução>`
+- **Carlos Eduardo Falcão Teixeira (líder):** Atuei na liderança técnica e na costura entre produto, arquitetura e documentação. Minha principal contribuição foi conduzir as decisões estruturais do MVP, especialmente a escolha por uma extensão Chrome Manifest V3 com arquitetura zero-backend, armazenamento local e integração direta com Gemini, além de apoiar o desenho dos prompts, o schema de saída e a rastreabilidade entre riscos, mitigação e testes. Também acompanhei os demais integrantes em partes do desenvolvimento e da documentação, tanto presencialmente quanto em reuniões online, principalmente por centralizar o acesso às ferramentas de IA usadas no projeto. O principal aprendizado foi perceber que a IA acelera bastante a implementação e a escrita, mas exige direção técnica clara, revisão constante e critérios objetivos para transformar sugestões em decisões de engenharia.
+- **Antonio Rodrigues Pinheiro Carolino:** Contribuí principalmente na fase de Exposição e Composição, ajudando a estruturar os artefatos iniciais que deram base ao produto: definição do problema, personas, estratégia de ação, escopo do MVP e organização das hipóteses de solução. Essa etapa foi importante para transformar uma ideia ampla — gerar ADRs com IA a partir de reuniões — em um problema de engenharia mais delimitado, com público, valor e restrições bem definidos. Meu principal aprendizado foi entender como a qualidade das decisões técnicas depende de uma boa formulação inicial do domínio: quando personas, objetivos e limites estão claros, a implementação fica mais objetiva e os trade-offs aparecem com mais nitidez.
+- **Mateus Ribeiro de Albuquerque:** Atuei na frente técnica relacionada à integração com a API Gemini e aos experimentos iniciais de geração de ADR, incluindo a validação do PoC backend e a consolidação do prompt/schema que serviram de referência para a extensão. Minha contribuição ajudou a transformar o fluxo conceitual em uma prova funcional de que a transcrição poderia ser convertida em um ADR estruturado nos campos esperados pelo padrão adotado. O principal aprendizado foi compreender a importância de controlar a saída do LLM por meio de schema, temperatura baixa, exemplos e instruções bem delimitadas, especialmente em um contexto em que fidelidade à reunião e redução de alucinação são requisitos centrais.
+- **Bruno Henrique Ferreira Pinto:** Contribuí na etapa de Ressonância, com foco em métricas, feedback, escalabilidade e análise de economicidade do desenvolvimento assistido por IA. Essa parte ajudou a avaliar o projeto além da implementação, considerando custo, esforço humano, limitações do uso de tokens, aderência ao MVP e caminhos de evolução. Meu principal aprendizado foi perceber que validar uma solução com IA não significa apenas verificar se ela funciona em um caso ideal, mas medir seus limites práticos, como contexto máximo, custo, latência, necessidade de revisão humana e viabilidade de escalar para reuniões reais mais longas.
+- **Pedro Augusto Stelzer da Silva:** Atuei principalmente na frente de testes e validação, apoiando a elaboração do checklist de lançamento, a execução dos cenários de teste e a organização das evidências de funcionamento do produto. Essa contribuição foi importante para verificar se o MVP atendia aos fluxos essenciais, como captura/entrada de transcrição, geração de ADR, revisão humana, refinamento por seção, histórico e exportação. O principal aprendizado foi entender que, em sistemas baseados em IA, testar não se limita a procurar erros de interface ou execução: também é necessário avaliar qualidade da resposta, coerência com a transcrição, segurança contra entradas maliciosas e clareza das limitações para o usuário final.
 
 ---
 
@@ -616,10 +616,10 @@ O MVP entrega a proposta central: **transforma uma transcrição em rascunho de 
 - **Nygard, M. (2011).** *Documenting Architecture Decisions* (padrão ADR).
 - **Brown, S.** *The C4 model for visualising software architecture.* <https://c4model.com>
 - **SWEBOK Guide v3/v4** — IEEE Computer Society (áreas de Design, Management e Maintenance).
-- **Google.** *Gemini API* — `gemini-3-flash-preview`. <https://ai.google.dev>
-- **Google.** *Chrome Extensions — Manifest V3.* <https://developer.chrome.com/docs/extensions/mv3>
+- **Google.** *Gemini API* — `gemini-3-flash-preview`. <https://ai.google.dev/gemini-api/docs>
+- **Google.** *Chrome Extensions — Manifest V3.* <https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3>
 - **Brasil.** *Lei nº 13.709/2018 (LGPD).*
-- **Microsoft.** *PromptBench* (base da suíte de prompt injection). <https://github.com/microsoft/promptbench>
+- **Microsoft.** *PromptBench* (base da suíte de prompt injection). <https://github.com/microsoftarchive/promptbench>
 - Ferramentas: TypeScript, Vite, `@crxjs/vite-plugin`, React, IndexedDB API.
 - **Assistentes de IA no desenvolvimento:** Claude Code (Anthropic) e Codex.
 
@@ -653,7 +653,7 @@ Fonte canônica: [`prompt_design_record.md`](https://github.com/MateusRiba/ADR_G
 ## 12.4 Prints, logs de commits e evidências
 
 - Evidências de ADRs gerados: [`evidence/2026-06-27/`](https://github.com/MateusRiba/ADR_Generator/tree/main/extension/reports/evidence/2026-06-27) (ideal, injection-1/2/3, sem-decisao, xss-schema) e [`evidence/2026-06-28/`](https://github.com/MateusRiba/ADR_Generator/tree/main/extension/reports/evidence/2026-06-28) (ideal-refinado, ideal-cap-30k-cortado).
-- Prints/vídeo da extensão em uso: `<preencher — anexar>`.
+- Prints/vídeo da extensão em uso: pendente de anexação no PDF final.
 - [`git log` completo (histórico de commits)](https://github.com/MateusRiba/ADR_Generator/commits/main).
 
 ---

@@ -7,6 +7,12 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-29] fix | Valida e corrige referencias do relatorio final
+
+Revisa as referencias do `docs/relatorio_final.md`, confirmando que os links GitHub para artefatos versionados correspondem a arquivos ou pastas existentes no repositorio local. Corrige as ancoras do sumario para os titulos com travessao, atualiza URLs externas para destinos canonicos quando havia redirecionamento (Gemini API, Manifest V3 e PromptBench) e substitui placeholders de prints/video por uma observacao explicita de pendencia.
+
+A justificativa e evitar referencias quebradas ou campos `<preencher>` no PDF final, preservando transparencia sobre o que ja esta versionado e o que ainda depende de anexacao manual antes da submissao.
+
 ## [2026-06-28] feature | Destaca em vermelho os caracteres acima do cap no editor de revisao
 
 O editor de revisao (`extension/src/page/components/ReviewTranscript.tsx`) agora pinta de vermelho o trecho da transcricao que passa dos **30.000 caracteres**. Como `<textarea>` nao estiliza caracteres individuais, usa-se o padrao de backdrop espelhado: um `div` atras do textarea renderiza o mesmo texto com o excedente envolto em `<mark class="review__over-limit">`, e o textarea por cima fica com `color: transparent` (so o cursor visivel). Os dois compartilham metricas de caixa identicas (`page.css`) para quebrar o texto igual, e o scroll e sincronizado.
@@ -20,6 +26,18 @@ Antes, ao cruzar o cap de **30.000 caracteres** durante a captura ao vivo, o `ap
 Agora o buffer acumula **todo** o conteudo capturado, sem corte. O alerta de cap (flag `truncated` → `CAPTURE_STATE` para o popup + `CAPTURE_TRUNCATED` para o overlay no Meet) continua disparando uma unica vez ao cruzar o limite, apenas mudando de semantica: avisa que a captura segue e que o usuario precisa revisar/cortar antes de gerar, ja que so os primeiros 30K vao a Gemini (`GENERATE_ADR` mantem o `slice` como rede de seguranca, e `ReviewTranscript` ja confirmava corte manual/automatico acima do cap). Mensagens do overlay (`recording_overlay.ts`) e do popup (`Capture.tsx`) reescritas; `ReviewTranscript.tsx` ganha indicador de quantos caracteres estao acima do limite.
 
 A justificativa e que o ADR final e uma sintese revisavel: descartar o excedente na origem destruia material que o usuario poderia querer manter via edicao manual (P2 — modo redacao). Preservar tudo no buffer e empurrar a decisao de corte para a revisao da pessoa alinha com o controle de privacidade existente (trechos removidos na revisao nao entram no payload) sem reintroduzir perda silenciosa de contexto.
+
+## [2026-06-29] feature | Preenche relatos individuais no relatorio final
+
+Atualiza a secao **10.5 Relato individual** do `docs/relatorio_final.md` com paragrafos especificos para cada integrante, conectando contribuicoes e aprendizados as frentes descritas no projeto: lideranca tecnica/arquitetura, Exposicao e Composicao, integracao Gemini, Ressonancia/economicidade e testes/validacao.
+
+A justificativa e atender ao template final da disciplina, que solicita uma reflexao individual por membro da equipe, mantendo coerencia com a divisao de responsabilidades registrada no relatorio e com a especificacao de que o documento deve amarrar produto, Workflow Document, aprendizados e resultados.
+
+## [2026-06-29] decision | Registra atendimento parcial para reunioes longas no relatorio final
+
+Apos teste de produto com roteiro de reuniao realista, o cap de aproximadamente **30.000 caracteres** foi atingido em cerca de **8 minutos** de falas completas com ruido cotidiano. O `docs/relatorio_final.md` foi atualizado para declarar que o MVP atende parcialmente: funciona para demonstracoes/reunioes curtas no escopo academico, mas nao cobre integralmente reunioes tipicas de **30 min a 2 h** sem evolucao tecnica.
+
+A justificativa registrada e que o limite atual esta associado ao uso da API gratuita/atual e ao cap de contexto adotado para controlar custo/latencia. Como trabalho futuro, o relatorio agora aponta explicitamente a necessidade de **chunking/sumarizacao** e adequacao para **APIs/modelos pagos com maior janela de contexto**.
 
 ## [2026-06-28] fix | Paridade da chave da API na pagina de revisao em tempo real
 
