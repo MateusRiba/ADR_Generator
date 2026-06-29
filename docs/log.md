@@ -7,6 +7,12 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-29] feature | Adiciona prints e video demo ao relatorio final
+
+Adiciona ao `docs/relatorio_final.md` as evidencias visuais finais do produto: tres prints versionados em `docs/assets/relatorio_final/` cobrindo revisao de transcricao com cap excedido, captura em andamento no Google Meet com overlay e historico local de ADRs. Tambem inclui o link do video demo: `https://youtu.be/gKpV4ynMVU4`.
+
+A justificativa e completar a secao de evidencias de funcionamento solicitada pelo template da disciplina, substituindo a pendencia de anexacao por artefatos concretos e rastreaveis no repositorio.
+
 ## [2026-06-29] fix | Valida e corrige referencias do relatorio final
 
 Revisa as referencias do `docs/relatorio_final.md`, confirmando que os links GitHub para artefatos versionados correspondem a arquivos ou pastas existentes no repositorio local. Corrige as ancoras do sumario para os titulos com travessao, atualiza URLs externas para destinos canonicos quando havia redirecionamento (Gemini API, Manifest V3 e PromptBench) e substitui placeholders de prints/video por uma observacao explicita de pendencia.

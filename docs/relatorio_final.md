@@ -347,7 +347,7 @@ Documento autoritativo: [`checklist_lancamento.md`](https://github.com/MateusRib
 
 - **Relatório de execução:** [`extension/reports/2026-06-27_test_run.md`](https://github.com/MateusRiba/ADR_Generator/blob/main/extension/reports/2026-06-27_test_run.md) — **23/23 testes aprovados** (FUNC 6/6, PRIV 4/4, SEG 4/4, IA 1/1, ROB 5/5, UX 3/3).
 - **8 exports `.md` de evidência** em [`evidence/2026-06-27/`](https://github.com/MateusRiba/ADR_Generator/tree/main/extension/reports/evidence/2026-06-27) e [`evidence/2026-06-28/`](https://github.com/MateusRiba/ADR_Generator/tree/main/extension/reports/evidence/2026-06-28): cenário ideal, 3 variações de prompt injection, ausência de decisão, XSS/schema, ADR refinado por seção e ADR gerado após corte do cap de 30K.
-- **Prints/vídeo da extensão em uso:** pendente de anexação no PDF final; as evidências versionadas de funcionamento estão nos exports `.md` listados acima.
+- **Prints/vídeo da extensão em uso:** 3 prints versionados em `docs/assets/relatorio_final/` (captura no Meet, revisão com cap excedido e histórico de ADRs) e [vídeo demo no YouTube](https://youtu.be/gKpV4ynMVU4). Ver Apêndice §12.4.
 
 ---
 
@@ -653,7 +653,19 @@ Fonte canônica: [`prompt_design_record.md`](https://github.com/MateusRiba/ADR_G
 ## 12.4 Prints, logs de commits e evidências
 
 - Evidências de ADRs gerados: [`evidence/2026-06-27/`](https://github.com/MateusRiba/ADR_Generator/tree/main/extension/reports/evidence/2026-06-27) (ideal, injection-1/2/3, sem-decisao, xss-schema) e [`evidence/2026-06-28/`](https://github.com/MateusRiba/ADR_Generator/tree/main/extension/reports/evidence/2026-06-28) (ideal-refinado, ideal-cap-30k-cortado).
-- Prints/vídeo da extensão em uso: pendente de anexação no PDF final.
+- Vídeo demo da solução: [https://youtu.be/gKpV4ynMVU4](https://youtu.be/gKpV4ynMVU4).
+- Print 1 — fluxo de colar/revisar transcrição existente, evidenciando cap de 30K excedido:
+
+![Fluxo de revisão de transcrição com cap de 30K excedido](assets/relatorio_final/print-transcricao-cap-30k.png)
+
+- Print 2 — captura em andamento no Google Meet, com popup e overlay de gravação:
+
+![Captura em andamento no Google Meet com overlay da extensão](assets/relatorio_final/print-captura-meet-overlay.png)
+
+- Print 3 — histórico local de ADRs gerados durante a reunião:
+
+![Histórico local de ADRs no popup da extensão](assets/relatorio_final/print-historico-adrs-meet.png)
+
 - [`git log` completo (histórico de commits)](https://github.com/MateusRiba/ADR_Generator/commits/main).
 
 ---
