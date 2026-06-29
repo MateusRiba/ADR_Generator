@@ -77,18 +77,18 @@ function broadcastState(): void {
 
 async function appendChunk(text: string): Promise<void> {
   await ensureRestored();
-  if (buffer.length >= TRANSCRIPT_CAP) {
-    if (!truncated) {
-      // Transição para truncado: avisa o popup (CAPTURE_STATE) e o overlay na
-      // aba do Meet (CAPTURE_TRUNCATED) uma única vez.
-      truncated = true;
-      broadcastState();
-      void notifyMeetTabTruncated();
-    }
-    return; // cap atingido: ignora o resto da fala
-  }
   const addition = buffer ? ` ${text}` : text;
-  buffer = (buffer + addition).slice(0, TRANSCRIPT_CAP);
+  // Mantém TODO o conteúdo capturado, mesmo após o cap de 30K. Antes o excedente
+  // era descartado e o contexto perdido sem recuperação; agora a fala segue no
+  // buffer para que o usuário revise no editor e mantenha os trechos bons (P2). O
+  // cap só limita o que é enviado à Gemini (ver GENERATE_ADR), não o que é gravado.
+  buffer = buffer + addition;
+  if (!truncated && buffer.length >= TRANSCRIPT_CAP) {
+    // Cruzou o cap pela primeira vez: avisa o popup (CAPTURE_STATE) e o overlay
+    // na aba do Meet (CAPTURE_TRUNCATED) uma única vez. A captura NÃO para.
+    truncated = true;
+    void notifyMeetTabTruncated();
+  }
   if (Date.now() - lastPersistAt >= BUFFER_PERSIST_INTERVAL_MS) {
     await persistBuffer();
   }

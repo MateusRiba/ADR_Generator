@@ -213,8 +213,10 @@ export function Capture({ apiKeyReady, onGenerated }: CaptureProps) {
         <div className="popup__notice popup__notice--warn">
           <p>
             Limite de {TRANSCRIPT_CAP.toLocaleString("pt-BR")} caracteres
-            atingido — o trecho excedente foi descartado e não será enviado ao
-            Gemini.
+            atingido — a captura continua e todo o conteúdo é preservado, mas só
+            os primeiros {TRANSCRIPT_CAP.toLocaleString("pt-BR")} caracteres serão
+            enviados ao Gemini. Revise a transcrição e mantenha os trechos
+            importantes antes de gerar o ADR.
           </p>
         </div>
       )}

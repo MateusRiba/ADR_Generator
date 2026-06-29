@@ -397,7 +397,7 @@ export function setWaitingForCaptions(waiting: boolean): void {
 export function setTruncated(truncated: boolean): void {
   if (!handle) return;
   handle.notice.textContent = truncated
-    ? "Limite de captura atingido — novas falas não entram mais neste ADR."
+    ? "Limite de 30K atingido — a captura continua, mas só os primeiros 30K vão ao Gemini. Revise e corte os trechos no editor antes de gerar."
     : "";
   handle.notice.classList.toggle("visible", truncated);
 }

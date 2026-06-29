@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { sendMessage } from "../../shared/runtime/messaging";
 import { isApiKeySet, onApiKeySet } from "../../shared/storage/apiKey";
 import { TRANSCRIPT_CAP, estimateTokens } from "../../shared/config";
@@ -329,6 +329,14 @@ export function ReviewTranscript() {
     new URLSearchParams(location.search).get("source") === "paste";
   const [phase, setPhase] = useState<Phase>("loading");
   const [transcript, setTranscript] = useState("");
+  // Espelha o scroll do textarea no backdrop de destaque (caracteres acima do cap).
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  function syncScroll() {
+    if (!textareaRef.current || !backdropRef.current) return;
+    backdropRef.current.scrollTop = textareaRef.current.scrollTop;
+    backdropRef.current.scrollLeft = textareaRef.current.scrollLeft;
+  }
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
   const [apiKeyReady, setApiKeyReady] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -499,12 +507,28 @@ export function ReviewTranscript() {
         </details>
       </details>
 
-      <textarea
-        className="review__textarea"
-        value={transcript}
-        onChange={(e) => setTranscript(e.target.value)}
-        spellCheck={false}
-      />
+      <div className="review__editor">
+        {/* Backdrop espelha o texto; o trecho acima do cap fica em vermelho.
+            O textarea por cima tem texto transparente (só o cursor aparece). */}
+        <div className="review__highlights" aria-hidden="true" ref={backdropRef}>
+          {transcript.slice(0, TRANSCRIPT_CAP)}
+          {transcript.length > TRANSCRIPT_CAP && (
+            <mark className="review__over-limit">
+              {transcript.slice(TRANSCRIPT_CAP)}
+            </mark>
+          )}
+          {/* Garante que a última linha (se terminar em \n) seja renderizada. */}
+          {"\n"}
+        </div>
+        <textarea
+          ref={textareaRef}
+          className="review__textarea"
+          value={transcript}
+          onChange={(e) => setTranscript(e.target.value)}
+          onScroll={syncScroll}
+          spellCheck={false}
+        />
+      </div>
 
       {apiKeyReady === false && (
         <p className="popup__hint popup__hint--muted">
@@ -522,6 +546,13 @@ export function ReviewTranscript() {
           >
             {" "}· ~{estimateTokens(transcript.length).toLocaleString("pt-BR")} tokens
           </span>
+          {transcript.length > TRANSCRIPT_CAP && (
+            <span className="popup__status--error" style={{ display: "block" }}>
+              Acima do limite de {TRANSCRIPT_CAP.toLocaleString("pt-BR")} — corte{" "}
+              {(transcript.length - TRANSCRIPT_CAP).toLocaleString("pt-BR")}{" "}
+              caractere(s) ou o final será cortado ao gerar.
+            </span>
+          )}
         </span>
         <button
           type="button"

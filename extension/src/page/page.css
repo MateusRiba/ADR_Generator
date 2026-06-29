@@ -47,19 +47,55 @@ body {
   gap: 12px;
 }
 
-.review__textarea {
+/* O editor sobrepõe um backdrop de destaque (review__highlights) atrás do
+   textarea. Ambos compartilham as MESMAS métricas de caixa para que o texto
+   quebre exatamente igual nos dois — só assim os caracteres acima do cap se
+   alinham ao texto real digitado. */
+.review__editor {
+  position: relative;
+}
+
+.review__textarea,
+.review__highlights {
   width: 100%;
   box-sizing: border-box;
-  min-height: 56vh;
   font: inherit;
   font-size: 14px;
   line-height: 1.5;
   padding: 12px 14px;
   border: 1px solid rgba(128, 128, 128, 0.4);
   border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.review__textarea {
+  position: relative;
+  min-height: 56vh;
   background: transparent;
-  color: inherit;
+  /* Texto transparente: quem é visível é o backdrop. O cursor segue visível. */
+  color: transparent;
+  caret-color: CanvasText;
   resize: vertical;
+}
+
+.review__highlights {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-color: transparent;
+  color: inherit;
+  background: transparent;
+}
+
+/* Trecho acima do limite de 30K: vermelho, para o usuário ver o que cortar. */
+.review__over-limit {
+  color: #d32f2f;
+  background: rgba(211, 47, 47, 0.12);
+  border-radius: 2px;
 }
 
 .review__temp-tests {

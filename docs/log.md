@@ -7,6 +7,20 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-28] feature | Destaca em vermelho os caracteres acima do cap no editor de revisao
+
+O editor de revisao (`extension/src/page/components/ReviewTranscript.tsx`) agora pinta de vermelho o trecho da transcricao que passa dos **30.000 caracteres**. Como `<textarea>` nao estiliza caracteres individuais, usa-se o padrao de backdrop espelhado: um `div` atras do textarea renderiza o mesmo texto com o excedente envolto em `<mark class="review__over-limit">`, e o textarea por cima fica com `color: transparent` (so o cursor visivel). Os dois compartilham metricas de caixa identicas (`page.css`) para quebrar o texto igual, e o scroll e sincronizado.
+
+Complementa a mudanca de preservar todo o conteudo apos o cap: agora o usuario ve exatamente onde esta o material que sera cortado ao gerar, facilitando manter as partes boas via edicao.
+
+## [2026-06-28] fix | Captura preserva todo o conteudo apos o cap de 30K
+
+Antes, ao cruzar o cap de **30.000 caracteres** durante a captura ao vivo, o `appendChunk` no service worker (`extension/src/background/service_worker.ts`) parava de anexar e descartava todo o restante da fala (`return` + `.slice(0, TRANSCRIPT_CAP)`). Em um teste de produto isso fez perder irrecuperavelmente o contexto da reuniao apos os 30K, sem como revisar e manter as partes boas no editor.
+
+Agora o buffer acumula **todo** o conteudo capturado, sem corte. O alerta de cap (flag `truncated` → `CAPTURE_STATE` para o popup + `CAPTURE_TRUNCATED` para o overlay no Meet) continua disparando uma unica vez ao cruzar o limite, apenas mudando de semantica: avisa que a captura segue e que o usuario precisa revisar/cortar antes de gerar, ja que so os primeiros 30K vao a Gemini (`GENERATE_ADR` mantem o `slice` como rede de seguranca, e `ReviewTranscript` ja confirmava corte manual/automatico acima do cap). Mensagens do overlay (`recording_overlay.ts`) e do popup (`Capture.tsx`) reescritas; `ReviewTranscript.tsx` ganha indicador de quantos caracteres estao acima do limite.
+
+A justificativa e que o ADR final e uma sintese revisavel: descartar o excedente na origem destruia material que o usuario poderia querer manter via edicao manual (P2 — modo redacao). Preservar tudo no buffer e empurrar a decisao de corte para a revisao da pessoa alinha com o controle de privacidade existente (trechos removidos na revisao nao entram no payload) sem reintroduzir perda silenciosa de contexto.
+
 ## [2026-06-28] fix | Paridade da chave da API na pagina de revisao em tempo real
 
 A pagina de revisao em tela cheia (`extension/src/page/components/ReviewTranscript.tsx`) lia `apiKeyReady` uma unica vez na montagem. Como a chave fica em `chrome.storage.session` (volatil, compartilhada entre contextos), quem configurava a chave no popup com a aba ja aberta nao via o botao **Gerar ADR** habilitar — o estado da pagina ficava congelado em `false`.
