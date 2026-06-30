@@ -9,13 +9,13 @@
 
 **Equipe:** Equipe 4
 
-| Integrante | Login / GitHub | Papel |
+| Integrante | Login  | Papel |
 |---|---|---|
-| **Carlos Eduardo Falcão Teixeira** *(líder)* | `kddu422` / `@CaduFalcao` | Tech Lead — arquitetura, prompt/IA, documentação Sinfonia |
-| Antonio Rodrigues Pinheiro Carolino | `@AntonioCar0lin0` | Composição dos artefatos das fases 1 e 2 — Exposição e Composição |
-| Mateus Ribeiro de Albuquerque | `@MateusRiba` | Ensaio — PoC backend Gemini, integração e artefatos técnicos |
-| Bruno Henrique Ferreira Pinto | — | Ressonância — métricas, feedback, escalabilidade e economicidade |
-| Pedro Augusto Stelzer da Silva | — | Testes e validação — checklist, evidências e relatório de execução |
+| **Carlos Eduardo Falcão Teixeira** *(líder)* | ceft | Tech Lead — arquitetura, prompt/IA, documentação Sinfonia |
+| Antonio Rodrigues Pinheiro Carolino | arpc2 | Composição dos artefatos das fases 1 e 2 — Exposição e Composição |
+| Mateus Ribeiro de Albuquerque | mra4 | Ensaio — PoC backend Gemini, integração e artefatos técnicos |
+| Bruno Henrique Ferreira Pinto | bhfp | Ressonância — métricas, feedback, escalabilidade e economicidade |
+| Pedro Augusto Stelzer da Silva | pass | Testes e validação — checklist, evidências e relatório de execução |
 
 > **Líder em destaque:** Carlos Eduardo Falcão Teixeira.
 

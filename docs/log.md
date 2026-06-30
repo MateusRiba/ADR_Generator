@@ -7,6 +7,12 @@ Tipos: `feature`, `refactor`, `fix`, `decision`, `migration`, `deprecation`, `in
 
 ---
 
+## [2026-06-29] fix | Corrige GitHub de Carlos no relatorio final
+
+Atualiza o identificador GitHub de Carlos Eduardo Falcao Teixeira no cabecalho do `docs/relatorio_final.md`, substituindo `@CaduFalcao` por `@CaduFalcaoT`.
+
+A justificativa e manter os dados de autoria e contato da equipe corretos na entrega final.
+
 ## [2026-06-29] feature | Adiciona prints e video demo ao relatorio final
 
 Adiciona ao `docs/relatorio_final.md` as evidencias visuais finais do produto: tres prints versionados em `docs/assets/relatorio_final/` cobrindo revisao de transcricao com cap excedido, captura em andamento no Google Meet com overlay e historico local de ADRs. Tambem inclui o link do video demo: `https://youtu.be/gKpV4ynMVU4`.
